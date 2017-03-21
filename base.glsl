@@ -43,13 +43,13 @@ bool decoupe(vec3 centre, vec3 inter, Coupe c, Coupe c2)
 void plane(vec3 norm, vec3 pos, vec3 color, Ray r, inout Hit h)
 {
     float t = (dot(norm,pos) - (dot (norm, r.pos))) / dot (norm, r.dir);
-		h.pos = r.pos + r.dir * t;
 
     if (t < 0.0)
         return;
 
     if (t < h.dist) {
         h.dist = t;
+				h.pos = r.pos + r.dir * h.dist;
 				h.color = color;
         h.norm = (faceforward (norm, norm, r.dir));
     }
@@ -84,7 +84,6 @@ void sphere (vec3 pos, vec3 color, float f, Ray r, inout Hit h) {
         return;
 
     float t = (-sqrt (g) - b) / a;
-		h.pos = r.pos + r.dir * t;
 
 		Coupe coupe;
 		coupe.pos = vec3(1,2,-6);
@@ -99,6 +98,7 @@ void sphere (vec3 pos, vec3 color, float f, Ray r, inout Hit h) {
 
     if (t < h.dist) {
         h.dist = t;
+		h.pos = r.pos + r.dir * h.dist;
 				h.color = color;
         h.norm = (h.pos - pos);
     }
@@ -123,7 +123,7 @@ void cyl (vec3 v, vec3 dir, vec3 color, float f, Ray r, inout Hit h) {
 
     if (t1 >= 0 && t1 < h.dist){
         h.dist = t1;
-        h.pos = r.pos + r.dir * t1;
+        h.pos = r.pos + r.dir * h.dist;
         vec3 temp = dir * (dot(r.dir, dir) * h.dist + dot(r.pos - v, dir));
         vec3 tmp = h.pos - v;
 				h.color = color;
@@ -158,7 +158,7 @@ void cone(vec3 v, vec3 dir,vec3 color,float f, Ray r, inout Hit h) {
 
     if (t1 > 0 && t1 < h.dist){
         h.dist = t1;
-        h.pos = r.pos + r.dir * t1;
+        h.pos = r.pos + r.dir * h.dist;
         vec3 temp = (dir * (dot(r.dir, dir) * h.dist + dot(r.pos - v, dir))) * (1 + pow(tan(f), 2));
         vec3 tmp = h.pos - v;
 				h.color = color;
@@ -166,7 +166,7 @@ void cone(vec3 v, vec3 dir,vec3 color,float f, Ray r, inout Hit h) {
         }
     /*else if (t2 > 0 && t2 < h.dist){
         h.dist = t2;
-        h.pos = r.pos + r.dir * t2;
+        h.pos = r.pos + r.dir * h.dist;
         vec3 temp = (rot * (dot(r.dir, rot) * h.dist + dot(r.pos - v, rot))) * (1 + pow(tan(f), 2));
         vec3 tmp = h.pos - v;
 				h.color = color;
@@ -186,22 +186,6 @@ void cube(vec3 pos, vec3 pent, float c, Ray r, inout Hit hit)
 	hit.pos = hit.pos + vec3(2,0,0);
 }
 
-/* Définition de l'effet de la lumière sur les objets présents */
-float		light(vec3 pos, Ray r, Hit h)
-{
-	vec3 v1 = r.pos + r.dir * h.dist;
-	vec3 d = pos - v1;
-	d = normalize(d);
-	float lambert = 0.00;
-	vec3 v3 = h.norm * (2.0 * dot(h.norm, d));
-	v3 = d - v3;
-	lambert = dot(d, h.norm);
-  	if (lambert < 0.15)
-    return(0.15);
-	return (lambert);
-}
-
-/* Définition de la scène objet présent */
 
 Hit		scene(Ray r)
 {
@@ -210,22 +194,45 @@ Hit		scene(Ray r)
     hit.dist = 1e20;
     hit.color = vec3(0,0,0);
     
+   	plane(vec3(1,1,0),vec3(1,1,-6),vec3(1,0.8,0), r, hit);
+   	plane(vec3(1,1,0),vec3(1,1,-6),vec3(1,0.8,0), r, hit);
     sphere(vec3(0, 0, -10),vec3(0,0,1),4, r, hit);
     sphere(vec3(5, 5, -20),vec3(0,1,0),4, r, hit);
     sphere(vec3(10, 10, -10),vec3(1,0,0),4, r, hit);
-    plane(vec3(1, 1, 0),vec3(1,1,-6), vec3(1,0.8,0), r, hit);
     //planel(vec3(0, 0, 1),vec3(0,0,-2),vec3(1,0,0),vec3(1,0,0),2, r, hit);
-    cube(vec3(0,20,-2),vec3(1,0,0),2,r,hit);
+    //cube(vec3(0,20,-2),vec3(1,0,0),2,r,hit);
     cyl(vec3(10, 0, -5),vec3(1,0,0),vec3(0.8,0.7,0.4),2, r, hit);
     cyl(vec3(55, 20, -5),vec3(15,6,4),vec3(0.9,0,0.4),5, r, hit);
     cone(vec3(0, 15, -6),vec3(1,0,0),vec3(1,1,0),M_PI * 15/180, r, hit);
     
     /* Position de la lumière */
-    sphere(vec3(0, 18, -12),vec3(255,255,255),0.5, r, hit);
+    //sphere(vec3(0, 18, -12),vec3(255,255,255),0.5, r, hit);
     
     return hit;
 }
 
+/* Définition de l'effet de la lumière sur les objets présents */
+float		light(vec3 pos, Ray r, Hit h)
+{
+	vec3 v4 = r.pos + r.dir * h.dist;
+	vec3 d1 = normalize(pos - h.pos);
+	vec3 d2 = normalize(v4 - pos);
+	Ray	shadow;
+	vec3 v1 = pos - h.pos;
+	vec3 v3 = v1 * v1;
+	h.dist = sqrt(v3.x + v3.y + v3.z);
+	shadow.dir = d2;
+	shadow.pos = pos;
+	Hit sha = scene(shadow);
+	if (sha.dist < h.dist - 0.1)
+		return(0.15);
+	float lambert = dot(d1, h.norm);
+  	if (lambert < 0.15)
+    	return(0.15);
+	return (lambert);
+}
+
+/* Définition de la scène objet présent*/
 /* Création d'un rayon */
 vec3	raycast(vec3 ro, vec3 rd)
 {
@@ -236,7 +243,7 @@ vec3	raycast(vec3 ro, vec3 rd)
 	r.dir = rd;
 	r.pos = ro;
 	h = scene(r);
-	color = h.color * light(vec3(0,18,-12), r, h);
+	color = h.color * light(vec3(0,18,-10), r, h);
 	return color;
 }
 
@@ -254,6 +261,5 @@ void		mainImage(vec2 coord)
 	vec3	right = normalize(cross(forw, vec3(0, 1, 0)));
 	vec3	up = normalize(cross(right, forw));
 	vec3	rd = normalize(uv.x * right + uv.y * up + fov * forw);
-
 	fragColor = vec4(raycast(cameraPos, rd), 1);
 }

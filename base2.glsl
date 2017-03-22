@@ -62,7 +62,7 @@ void planel (vec3 norm, vec3 pos, vec3 pent, vec3 color, float ar, Ray r, inout 
     float t = (dot(norm,pos) - dot (norm, r.pos)) / dot (norm, r.dir);
 		h.pos = r.pos + r.dir * t;
 
-    if (t < 0.0 || h.pos.x > pos.x + ar/2 || h.pos.x < pos.x - ar/2  || h.pos.y > pos.y + ar/2 || h.pos.y < pos.y - ar/2 || h.pos.z > pos.z + ar/2 || h.pos.z < pos.z - ar/2)
+    if (t < 0 || h.pos.x > pos.x + ar/2 || h.pos.x < pos.x - ar/2  || h.pos.y > pos.y + ar/2 || h.pos.y < pos.y - ar/2 || h.pos.z > pos.z + ar/2 || h.pos.z < pos.z - ar/2)
         return;
 
     if (t < h.dist) {
@@ -237,9 +237,15 @@ Hit		shadow(Ray r)
     //cube(vec3(0,20,-2),vec3(1,0,0),2,r,hit);
     
     /* Position de la lumière */
-    //sphere(vec3(0, 18, -12),vec3(255,255,255),0.5, r, hit);
+    //sphere(vec3(0, 18, -10),vec3(255,255,255),0.5, r, hit);
+    //sphere(vec3(15, 15, -25),vec3(255,255,255),0.5, r, hit);
    	 
     return hit;
+}
+
+float		limit(float value, float min, float max)
+{
+	return (value < min ? min : (value > max ? max : value));
 }
 
 /* Définition de l'effet de la lumière sur les objets présents */
@@ -254,15 +260,12 @@ float		light(vec3 pos, Ray r, Hit h)
 	shad.pos = pos;
 	h.dist = sqrt(v3.x + v3.y + v3.z);
 	Hit sha = shadow(shad);
-	if (sha.dist < h.dist - EPSI * h.dist)
+	if (sha.dist < h.dist - (EPSI * h.dist)) // Ombres -> pb a regler pour les obj / lum se comparant a eux meme 
 		return (0.15);
 	float lambert = dot(d, h.norm);
-	if (lambert < 0.15)
-    	return(0.15);
-	return (lambert);
+	return (limit(lambert, 0.15, 1));
 }
 
-/* Définition de la scène objet présent*/
 /* Création d'un rayon */
 vec3	raycast(vec3 ro, vec3 rd)
 {
@@ -273,8 +276,8 @@ vec3	raycast(vec3 ro, vec3 rd)
 	r.dir = rd;
 	r.pos = ro;
 	h = scene(r);
-	color = h.color * light(vec3(0,18,-10), r, h);
-	//color = h.color * (light(vec3(0,18,-10), r, h) + light(vec3(15, 15, -25), r , h) / 2);
+	//color = h.color * limit(light(vec3(0,18,-10), r, h), 0.15, 1);
+	color = h.color * ((light(vec3(0,18,-10), r, h) + light(vec3(15, 15, -25), r, h)) / 2);
 	return color;
 }
 void		mainImage(vec2 coord)

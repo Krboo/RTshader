@@ -273,8 +273,8 @@ vec3	raycast(vec3 ro, vec3 rd)
 	r.dir = rd;
 	r.pos = ro;
 	h = scene(r);
-	//color = h.color * light(vec3(0,18,-10), r, h);
-	color = h.color * (light(vec3(0,18,-10), r, h) + light(vec3(15, 15, -25), r , h) / 2);
+	color = h.color * light(vec3(0,18,-10), r, h);
+	//color = h.color * (light(vec3(0,18,-10), r, h) + light(vec3(15, 15, -25), r , h) / 2);
 	return color;
 }
 void		mainImage(vec2 coord)

@@ -1,15 +1,12 @@
 #define M_PI 3.1415926535897932384626433832795
-#define EPSI 0.01f
+#define EPSI 0.01
 
-
-/* Structure pour definir le rayon de vison */
 struct		Ray
 {
 	vec3	dir;
 	vec3	pos;
 };
 
-/* Structure pour definir les collisions */
 struct		Hit
 {
 	float	dist;
@@ -18,14 +15,14 @@ struct		Hit
 	vec3	pos;
 };
 
-/* Structure pour définir les coupes */
 struct	Coupe
 {
 	vec3	pos;
 	vec3	rot;
 };
 
-/* Fonction qui compare deux distance et permet de faire la découpe de sphère */
+/* Découpe de sphère */
+
 bool decoupe(vec3 centre, vec3 inter, Coupe c, Coupe c2)
 {
 	float d = (c.rot.x * c.pos.x + c.rot.y * c.pos.y + c.rot.z * c.pos.z) * -1;
@@ -41,7 +38,8 @@ bool decoupe(vec3 centre, vec3 inter, Coupe c, Coupe c2)
 	return(false);
 }
 
-/* Fonction du calcul de l'intersection entre un rayon et un plan */
+/* Intersection rayon / plan */
+
 void plane(vec3 norm, vec3 pos, vec3 color, Ray r, inout Hit h)
 {
     float t = (dot(norm,pos) - (dot (norm, r.pos))) / dot (norm, r.dir);
@@ -57,7 +55,8 @@ void plane(vec3 norm, vec3 pos, vec3 color, Ray r, inout Hit h)
     }
 }
 
-/* Fonction du calcul de l'intersection entre un rayon et un plan limité (obselete on le fera en mesh) */
+/* Intersection rayon / plan limité (obsolete on le fera en mesh) */
+
 void planel (vec3 norm, vec3 pos, vec3 pent, vec3 color, float ar, Ray r, inout Hit h) {
     float t = (dot(norm,pos) - dot (norm, r.pos)) / dot (norm, r.dir);
 		h.pos = r.pos + r.dir * t;
@@ -72,7 +71,8 @@ void planel (vec3 norm, vec3 pos, vec3 pent, vec3 color, float ar, Ray r, inout 
     }
 }
 
-/* Fonction du calcul de l'intersection entre un rayon et une sphère */
+/* Intersection rayon / sphère */
+
 void sphere (vec3 pos, vec3 color, float f, Ray r, inout Hit h) {
     vec3 d = r.pos - pos;
 
@@ -105,7 +105,8 @@ void sphere (vec3 pos, vec3 color, float f, Ray r, inout Hit h) {
     }
 }
 
-/* Fonction du calcul de l'intersection entre un rayon et un cylindre */
+/* intersection rayon / cylindre */
+
 void cyl (vec3 v, vec3 dir, vec3 color, float f, Ray r, inout Hit h) {
     vec3 d = r.pos - v;
 
@@ -193,7 +194,6 @@ void cube(vec3 pos, vec3 pent, float c, Ray r, inout Hit hit)
 	hit.pos = hit.pos + vec3(2,0,0);
 }
 
-
 Hit		scene(Ray r)
 {
     Hit		hit;
@@ -202,44 +202,23 @@ Hit		scene(Ray r)
     hit.color = vec3(0,0,0);
     
     cone(vec3(0, 15, -6),vec3(1,0,0),vec3(1,1,0),M_PI * 15/180, r, hit);
-    cyl(vec3(10, 0, -5),vec3(1,0,0),vec3(0.8,0.7,0.4),2, r, hit);
-    cyl(vec3(55, 20, -5),vec3(15,6,4),vec3(0.9,0,0.4),5, r, hit);
+    cyl(vec3(10, -15, -45),vec3(1,0,0),vec3(0.8,0.7,0.4),2, r, hit);
+    cyl(vec3(30, -55, -25),vec3(1,0,0.8),vec3(0.8,0.7,0.8),12, r, hit);
+    cyl(vec3(75, -30, -10),vec3(15,6,4),vec3(0.9,0,0.4),5, r, hit);
    	plane(vec3(1,1,0),vec3(1,1,-6),vec3(1,0.8,0), r, hit);
    	plane(vec3(1,1,0),vec3(1,1,-6),vec3(1,0.8,0), r, hit);
-    sphere(vec3(0, 0, -10),vec3(0,0,1),4, r, hit);
-    sphere(vec3(5, 5, -20),vec3(0,1,0),4, r, hit);
-    sphere(vec3(10, 10, -10),vec3(1,0,0),4, r, hit);
+    sphere(vec3(0, 9, -10),vec3(0,0,1),4, r, hit);
+    sphere(vec3(8, 9, -30),vec3(0,1,0),4, r, hit);
+    sphere(vec3(10, 10, -40),vec3(1,0,0),4, r, hit);
+    sphere(vec3(-40, 30, -40),vec3(1,0,0),4, r, hit);
     //planel(vec3(0, 0, 1),vec3(0,0,-2),vec3(1,0,0),vec3(1,0,0),2, r, hit);
     //cube(vec3(0,20,-2),vec3(1,0,0),2,r,hit);
     
     /* Position de la lumière */
-    //sphere(vec3(0, 18, -12),vec3(255,255,255),0.5, r, hit);
+    sphere(vec3(0, 18, -11),vec3(255,255,255),0.5, r, hit);
+    sphere(vec3(15, 15, -24),vec3(255,255,255),0.5, r, hit);
+    sphere(vec3(45, 20, -25),vec3(255,255,255),0.5, r, hit);
     
-    return hit;
-}
-
-Hit		shadow(Ray r)
-{
-    Hit		hit;
-    
-    hit.dist = 1e20;
-    hit.color = vec3(0,0,0);
-    
-    cone(vec3(0, 15, -6),vec3(1,0,0),vec3(1,1,0),M_PI * 15/180, r, hit);
-	cyl(vec3(10, 0, -5),vec3(1,0,0),vec3(0.8,0.7,0.4),2, r, hit);
-    cyl(vec3(55, 20, -5),vec3(15,6,4),vec3(0.9,0,0.4),5, r, hit);
-   	plane(vec3(1,1,0),vec3(1,1,-6),vec3(1,0.8,0), r, hit);
-   	plane(vec3(1,1,0),vec3(1,1,-6),vec3(1,0.8,0), r, hit);
-    sphere(vec3(0, 0, -10),vec3(0,0,1),4, r, hit);
-    sphere(vec3(5, 5, -20),vec3(0,1,0),4, r, hit);
-    sphere(vec3(10, 10, -10),vec3(1,0,0),4, r, hit);
-    //planel(vec3(0, 0, 1),vec3(0,0,-2),vec3(1,0,0),vec3(1,0,0),2, r, hit);
-    //cube(vec3(0,20,-2),vec3(1,0,0),2,r,hit);
-    
-    /* Position de la lumière */
-    //sphere(vec3(0, 18, -10),vec3(255,255,255),0.5, r, hit);
-    //sphere(vec3(15, 15, -25),vec3(255,255,255),0.5, r, hit);
-   	 
     return hit;
 }
 
@@ -255,13 +234,21 @@ float		light(vec3 pos, Ray r, Hit h)
 	vec3 v3 = v1 * v1;
 	vec3 d = normalize(v1);
 	
-	Ray	shad;
-	shad.dir = -d;
-	shad.pos = pos;
-	h.dist = sqrt(v3.x + v3.y + v3.z);
-	Hit sha = shadow(shad);
-	if (sha.dist < h.dist - (EPSI * h.dist)) // Ombres -> pb a regler pour les obj / lum se comparant a eux meme 
-		return (0.15);
+	//Ray	shad;
+	Ray rec;
+
+	//shad.dir = -d;
+	//shad.pos = pos;
+	//h.dist = sqrt(v3.x + v3.y + v3.z);
+	//Hit sha = scene(shad);
+	//if (sha.dist < h.dist - (EPSI * h.dist )) //Ombres -> pb a regler pour les obj / lum se comparant a eux meme 
+	//if (sha.dist > EPSI && sha.dist < h.dist - EPSI)
+	//	return (0.15);
+	rec.dir = h.norm;
+	rec.pos = h.pos;
+	Hit recursion = scene(rec);
+	if (recursion.dist < h.dist - (EPSI * h.dist))
+		return (dot(d, recursion.norm));
 	float lambert = dot(d, h.norm);
 	return (limit(lambert, 0.15, 1));
 }
@@ -272,18 +259,26 @@ vec3	raycast(vec3 ro, vec3 rd)
 	vec3		color = vec3(0,0,0);
 	Ray			r;
 	Hit			h;
+	float 		l1;
+	float 		l2;
+	float 		l3;
+
 
 	r.dir = rd;
 	r.pos = ro;
 	h = scene(r);
+	l1 = light(vec3(0,18,-10), r, h);
+	l2 = light(vec3(15, 15, -25), r, h);
+	l3 = light(vec3(45, 20, 25), r, h);
 	//color = h.color * limit(light(vec3(0,18,-10), r, h), 0.15, 1);
-	color = h.color * ((light(vec3(0,18,-10), r, h) + light(vec3(15, 15, -25), r, h)) / 2);
+	color = h.color * ((l1 + l2 + l3) / 3);
 	return color;
 }
+
 void		mainImage(vec2 coord)
 {
 	vec2	uv = (coord / iResolution) * 2 - 1;
-	vec3	cameraPos = iMoveAmount.xyz + vec3(0, 0, -17);
+	vec3	cameraPos = iMoveAmount.xyz + vec3(0, 5, -17);
 	vec3	cameraDir = vec3(0,0,0);
 	vec3	col;
 

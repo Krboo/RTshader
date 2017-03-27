@@ -86,23 +86,25 @@ void sphere (vec3 pos, vec3 color, float f, Ray r, inout Hit h) {
         return;
 
     float t = (-sqrt (g) - b) / a;	
-		Coupe coupe;
-		coupe.pos = vec3(1,2,-6);
-		coupe.rot = vec3(0,1,0);
+	//	Coupe coupe;
+	//	coupe.pos = vec3(1,2,-6);
+	//	coupe.rot = vec3(0,1,0);
 
-		Coupe coupe2;
-		coupe2.pos = vec3(1,-2,-6);
-		coupe2.rot = vec3(0,-1,0);
+	//	Coupe coupe2;
+	//	coupe2.pos = vec3(1,-2,-6);
+	//	coupe2.rot = vec3(0,-1,0);
 
-		if (t < EPSI) //|| decoupe(pos, h.pos, coupe, coupe2))
-				return;
+		if (t < 0)
+			return;
+			 //|| decoupe(pos, h.pos, coupe, coupe2))
 
     if (t < h.dist) {
-        h.dist = t;
+        h.dist = t + EPSI;
 		h.pos = r.pos + r.dir * h.dist;
 				h.color = color;
         h.norm = (h.pos - pos);
     }
+	return;
 }
 
 /* intersection rayon / cylindre */
@@ -127,7 +129,7 @@ void cyl (vec3 v, vec3 dir, vec3 color, float f, Ray r, inout Hit h) {
 		return ;
 
     if (t1 > EPSI && t1 < h.dist){
-        h.dist = t1;
+        h.dist = t1 - EPSI;
         h.pos = r.pos + r.dir * h.dist;
         vec3 temp = dir * (dot(r.dir, dir) * h.dist + dot(r.pos - v, dir));
         vec3 tmp = h.pos - v;
@@ -156,7 +158,7 @@ void cone(vec3 v, vec3 dir,vec3 color,float f, Ray r, inout Hit h) {
     float g = b*b - 4*a*c;
 
     if (g < 0)
-        return;
+        return ;
 
     float t1 = (-sqrt(g) - b) / (2*a);
     //float t2 = (sqrt(g) - b) / (2*a);
@@ -164,15 +166,15 @@ void cone(vec3 v, vec3 dir,vec3 color,float f, Ray r, inout Hit h) {
 	if (t1 < EPSI)
 		return ;
 
-    if (t1 < h.dist){
-        h.dist = t1;
+    if (t1 < h.dist){ 
+        h.dist = t1 - EPSI;
         h.pos = r.pos + r.dir * h.dist;
         vec3 temp = (dir * (dot(r.dir, dir) * h.dist + dot(r.pos - v, dir))) * (1 + pow(tan(f), 2));
         vec3 tmp = h.pos - v;
 				h.color = color;
         h.norm = tmp - temp;
         }
-    /*else if (t2 > 0 && t2 < h.dist){
+    /*else if (t2 > 0){
         h.dist = t2;
         h.pos = r.pos + r.dir * h.dist;
         vec3 temp = (rot * (dot(r.dir, rot) * h.dist + dot(r.pos - v, rot))) * (1 + pow(tan(f), 2));
@@ -194,6 +196,20 @@ void cube(vec3 pos, vec3 pent, float c, Ray r, inout Hit hit)
 	hit.pos = hit.pos + vec3(2,0,0);
 }
 
+Hit		spherescene(Ray r)
+{
+    Hit		hit;
+    
+    hit.dist = 1e20;
+    hit.color = vec3(0,0,0);
+    
+    sphere(vec3(0, 9, -10),vec3(0,0,1),4, r, hit);
+    sphere(vec3(8, 9, -30),vec3(0,1,0),4, r, hit);
+    sphere(vec3(10, 10, -40),vec3(1,0,0),4, r, hit);
+    sphere(vec3(-40, 30, -40),vec3(1,0,0),4, r, hit);
+    
+    return hit;
+}
 Hit		scene(Ray r)
 {
     Hit		hit;
@@ -201,23 +217,23 @@ Hit		scene(Ray r)
     hit.dist = 1e20;
     hit.color = vec3(0,0,0);
     
-    cone(vec3(0, 15, -6),vec3(1,0,0),vec3(1,1,0),M_PI * 15/180, r, hit);
-    cyl(vec3(10, -15, -45),vec3(1,0,0),vec3(0.8,0.7,0.4),2, r, hit);
+	cone(vec3(0, 15, -6),vec3(1,0,0),vec3(1,1,0),M_PI * 15/180, r, hit);
+    cyl(vec3(100, -125, 245),vec3(1,1,0),vec3(0.8,0.7,0.4),2, r, hit);
     cyl(vec3(30, -55, -25),vec3(1,0,0.8),vec3(0.8,0.7,0.8),12, r, hit);
-    cyl(vec3(75, -30, -10),vec3(15,6,4),vec3(0.9,0,0.4),5, r, hit);
+    cyl(vec3(75, -50, -160),vec3(15,6,4),vec3(0.9,0,0.4),9, r, hit);
    	plane(vec3(1,1,0),vec3(1,1,-6),vec3(1,0.8,0), r, hit);
-   	plane(vec3(1,1,0),vec3(1,1,-6),vec3(1,0.8,0), r, hit);
-    sphere(vec3(0, 9, -10),vec3(0,0,1),4, r, hit);
+   	plane(vec3(0,1,0),vec3(50,-280,-30),vec3(0.5,0.8,0), r, hit);
+    sphere(vec3(15, 5, -10),vec3(0,0,1),4, r, hit);
     sphere(vec3(8, 9, -30),vec3(0,1,0),4, r, hit);
-    sphere(vec3(10, 10, -40),vec3(1,0,0),4, r, hit);
-    sphere(vec3(-40, 30, -40),vec3(1,0,0),4, r, hit);
+    sphere(vec3(15, 15, -45),vec3(1,0,0),4, r, hit);
+    sphere(vec3(40, 90, 100),vec3(1,0,0),4, r, hit);
     //planel(vec3(0, 0, 1),vec3(0,0,-2),vec3(1,0,0),vec3(1,0,0),2, r, hit);
     //cube(vec3(0,20,-2),vec3(1,0,0),2,r,hit);
     
     /* Position de la lumière */
-    sphere(vec3(0, 18, -11),vec3(255,255,255),0.5, r, hit);
-   	sphere(vec3(15, 15, -24),vec3(255,255,255),0.5, r, hit);
-   	sphere(vec3(45, 20, 25),vec3(255,255,255),0.5, r, hit);
+    //sphere(vec3(0, 18, -11),vec3(255,255,255),0.5, r, hit);
+   	//sphere(vec3(15, 15, -24),vec3(255,255,255),0.5, r, hit);
+   	//sphere(vec3(45, 20, 25),vec3(255,255,255),0.5, r, hit);
     
     return hit;
 }
@@ -229,25 +245,25 @@ float		limit(float value, float min, float max)
 
 bool			shadows(vec3 pos, vec3 d, Hit h)
 {
-	Ray		shad;
-	Hit		shadow;
+	Ray		shadow;
+	Hit		shad;
 
-	shad.dir = -d;
-	shad.pos = pos;
-	shadow = scene(shad);
-	if (shadow.dist < h.dist - (EPSI * h.dist ))
+	shadow.dir = -d;
+	shadow.pos = pos;
+	shad = scene(shadow);
+	if (shad.dist < h.dist - (EPSI * h.dist ))
 		return (true);
 	return (false);	
 }
 
 float			reflexion(Hit h, vec3 d)
 {
-	Ray rec;
+	Ray reflexion;
+	Hit ref;
 
-	rec.dir = h.norm;
-	rec.pos = h.pos;
-
-	Hit ref = scene(rec);
+	reflexion.dir = h.norm;
+	reflexion.pos = h.pos;
+	ref = scene(reflexion);
 	if (ref.dist < h.dist - (EPSI * h.dist))
 		return (dot(d, ref.norm));
 	return (0);
@@ -263,11 +279,11 @@ float		light(vec3 pos, Ray r, Hit h)
 	float ref;
 
 	h.dist = sqrt(v3.x + v3.y + v3.z);
-//	ref = (reflexion(h, d));
-//	if (ref != 0)
-//		return (ref);
-	if (shadows(pos, d, h) == true)
+	if (shadows(pos, d, h))
 		return (0.15);
+	ref = (reflexion(h, d));
+	if (ref != 0)
+		return (limit(ref, 0.15, 1));
 	float lambert = dot(d, h.norm);
 	return (limit(lambert, 0.15, 1));
 }
@@ -289,7 +305,6 @@ vec3	raycast(vec3 ro, vec3 rd)
 	l1 = light(vec3(0,18,-10), r, h);
 	l2 = light(vec3(15, 15, -25), r, h);
 	l3 = light(vec3(45, 20, 25), r, h);
-	//color = h.color * limit(light(vec3(0,18,-10), r, h), 0.15, 1);
 	color = h.color * ((l1 + l2 + l3) / 3);
 	return color;
 }

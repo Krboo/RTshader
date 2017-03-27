@@ -216,8 +216,8 @@ Hit		scene(Ray r)
     
     /* Position de la lumière */
     sphere(vec3(0, 18, -11),vec3(255,255,255),0.5, r, hit);
-    sphere(vec3(15, 15, -24),vec3(255,255,255),0.5, r, hit);
-    sphere(vec3(45, 20, -25),vec3(255,255,255),0.5, r, hit);
+   	sphere(vec3(15, 15, -24),vec3(255,255,255),0.5, r, hit);
+   	sphere(vec3(45, 20, 25),vec3(255,255,255),0.5, r, hit);
     
     return hit;
 }
@@ -227,28 +227,47 @@ float		limit(float value, float min, float max)
 	return (value < min ? min : (value > max ? max : value));
 }
 
+bool			shadows(vec3 pos, vec3 d, Hit h)
+{
+	Ray		shad;
+	Hit		shadow;
+
+	shad.dir = -d;
+	shad.pos = pos;
+	shadow = scene(shad);
+	if (shadow.dist < h.dist - (EPSI * h.dist ))
+		return (true);
+	return (false);	
+}
+
+float			reflexion(Hit h, vec3 d)
+{
+	Ray rec;
+
+	rec.dir = h.norm;
+	rec.pos = h.pos;
+
+	Hit ref = scene(rec);
+	if (ref.dist < h.dist - (EPSI * h.dist))
+		return (dot(d, ref.norm));
+	return (0);
+}
+
+
 /* Définition de l'effet de la lumière sur les objets présents */
 float		light(vec3 pos, Ray r, Hit h)
 {
 	vec3 v1 = pos - h.pos;
 	vec3 v3 = v1 * v1;
 	vec3 d = normalize(v1);
-	
-	//Ray	shad;
-	Ray rec;
+	float ref;
 
-	//shad.dir = -d;
-	//shad.pos = pos;
-	//h.dist = sqrt(v3.x + v3.y + v3.z);
-	//Hit sha = scene(shad);
-	//if (sha.dist < h.dist - (EPSI * h.dist )) //Ombres -> pb a regler pour les obj / lum se comparant a eux meme 
-	//if (sha.dist > EPSI && sha.dist < h.dist - EPSI)
-	//	return (0.15);
-	rec.dir = h.norm;
-	rec.pos = h.pos;
-	Hit recursion = scene(rec);
-	if (recursion.dist < h.dist - (EPSI * h.dist))
-		return (dot(d, recursion.norm));
+	h.dist = sqrt(v3.x + v3.y + v3.z);
+//	ref = (reflexion(h, d));
+//	if (ref != 0)
+//		return (ref);
+	if (shadows(pos, d, h) == true)
+		return (0.15);
 	float lambert = dot(d, h.norm);
 	return (limit(lambert, 0.15, 1));
 }

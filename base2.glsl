@@ -1,5 +1,5 @@
 #define M_PI 3.1415926535897932384626433832795
-#define EPSI 0.01
+#define EPSI 0.01 // pb avec 0.0001f
 
 struct		Ray
 {
@@ -196,20 +196,6 @@ void cube(vec3 pos, vec3 pent, float c, Ray r, inout Hit hit)
 	hit.pos = hit.pos + vec3(2,0,0);
 }
 
-Hit		spherescene(Ray r)
-{
-    Hit		hit;
-    
-    hit.dist = 1e20;
-    hit.color = vec3(0,0,0);
-    
-    sphere(vec3(0, 9, -10),vec3(0,0,1),4, r, hit);
-    sphere(vec3(8, 9, -30),vec3(0,1,0),4, r, hit);
-    sphere(vec3(10, 10, -40),vec3(1,0,0),4, r, hit);
-    sphere(vec3(-40, 30, -40),vec3(1,0,0),4, r, hit);
-    
-    return hit;
-}
 Hit		scene(Ray r)
 {
     Hit		hit;
@@ -227,7 +213,6 @@ Hit		scene(Ray r)
     sphere(vec3(8, 9, -30),vec3(0,1,0),4, r, hit);
     sphere(vec3(15, 15, -45),vec3(1,0,0),4, r, hit);
     sphere(vec3(40, 90, 100),vec3(1,0,0),4, r, hit);
-    //planel(vec3(0, 0, 1),vec3(0,0,-2),vec3(1,0,0),vec3(1,0,0),2, r, hit);
     //cube(vec3(0,20,-2),vec3(1,0,0),2,r,hit);
     
     /* Position de la lumière */
@@ -281,9 +266,9 @@ float		light(vec3 pos, Ray r, Hit h)
 	h.dist = sqrt(v3.x + v3.y + v3.z);
 	if (shadows(pos, d, h))
 		return (0.15);
-	ref = (reflexion(h, d));
-	if (ref != 0)
-		return (limit(ref, 0.15, 1));
+	//ref = (reflexion(h, d));
+	//if (ref != 0)
+	//	return (limit(ref, 0.15, 1));
 	float lambert = dot(d, h.norm);
 	return (limit(lambert, 0.15, 1));
 }

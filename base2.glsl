@@ -1,5 +1,5 @@
 #define M_PI 3.1415926535897932384626433832795
-#define EPSI 0.01 // pb avec 0.0001f
+#define EPSI 0.001f // pb avec 0.0001f
 
 struct		Ray
 {
@@ -44,7 +44,7 @@ void plane(vec3 norm, vec3 pos, vec3 color, Ray r, inout Hit h)
 {
 	float t = (dot(norm,pos) - (dot (norm, r.pos))) / dot (norm, r.dir);
 
-	if (t < EPSI)
+	if (t <= EPSI)
 		return;
 
 	if (t < h.dist) {
@@ -118,16 +118,16 @@ void cyl (vec3 v, vec3 dir, vec3 color, float f, Ray r, inout Hit h) {
 
 	float g = b*b - 4*a*c;
 
-	if (g < EPSI)
+	if (g < 0)
 		return;
 
 	float t1 = (-sqrt(g) - b) / (2*a);
 	//float t2 = (sqrt(g) - b) / (2*a);
 
-	if (t1 < EPSI)
+	if (t1 < 0)
 		return ;
 
-	if (t1 > EPSI && t1 < h.dist){
+	if (t1 >= EPSI && t1 < h.dist){
 		h.dist = t1 - EPSI;
 		h.pos = r.pos + r.dir * h.dist;
 		vec3 temp = dir * (dot(r.dir, dir) * h.dist + dot(r.pos - v, dir));
@@ -160,13 +160,13 @@ void cone(vec3 v, vec3 dir,vec3 color,float f, Ray r, inout Hit h) {
 		return ;
 
 	float t1 = (-sqrt(g) - b) / (2*a);
-	//float t2 = (sqrt(g) - b) / (2*a);
+	float t2 = (sqrt(g) - b) / (2*a);
 
 	if (t1 < EPSI)
 		return ;
 
 	if (t1 < h.dist){ 
-		h.dist = t1 - EPSI;
+		h.dist = t1 ;
 		h.pos = r.pos + r.dir * h.dist;
 		vec3 temp = (dir * (dot(r.dir, dir) * h.dist + dot(r.pos - v, dir))) * (1 + pow(tan(f), 2));
 		vec3 tmp = h.pos - v;
@@ -232,10 +232,10 @@ bool			shadows(vec3 pos, vec3 d, Hit h)
 	Ray		shadow;
 	Hit		shad;
 
-	shadow.dir = -d;
+	shadow.dir = d;
 	shadow.pos = pos;
 	shad = scene(shadow);
-	if (shad.dist < h.dist - (EPSI * h.dist ))
+	if (shad.dist < h.dist)// - (EPSI * h.dist ))
 		return (true);
 	return (false);	
 }
@@ -248,12 +248,10 @@ float			reflexion(Hit h, vec3 d, vec3 pos)
    reflexion.dir = h.norm;
    reflexion.pos = h.pos;
    ref = scene(reflexion);
-	if (shadows(pos, d, h))
-		return (0.15);
 	vec3 v1 = h.pos - ref.pos;
 	vec3 v3 = v1 * v1;
 	vec3 d2 = normalize(v1);
-   if (ref.dist < h.dist - (EPSI * h.dist))
+   if (ref.dist < h.dist )//- (EPSI * h.dist))
    		return (dot(d2, ref.norm));
    return (0.0);
 }
@@ -267,11 +265,11 @@ float		light(vec3 pos, Ray r, Hit h)
 	float lambert = 0.15;
 	float ref ;
 	h.dist = sqrt(v3.x + v3.y + v3.z);
-	ref = reflexion(h, d, pos);
-	if (shadows(pos, d, h))
+	//ref = reflexion(h, d, pos);
+	if (shadows(h.pos , d, h))
 		return (0.15);
-	if (ref != 0)
-		return (ref);
+	//if (ref != 0)
+	//	return (ref);
 	lambert = limit(dot(d, h.norm), 0.15, 1.0);
 	return (lambert);
 }

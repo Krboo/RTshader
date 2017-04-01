@@ -1,5 +1,5 @@
 #define M_PI 3.1415926535897932384626433832795
-#define EPSI 0.01f
+#define EPSI 0.001f
 
 
 /* Structure pour definir le rayon de vison */
@@ -218,30 +218,6 @@ Hit		scene(Ray r)
     return hit;
 }
 
-Hit		shadow(Ray r)
-{
-    Hit		hit;
-    
-    hit.dist = 1e20;
-    hit.color = vec3(0,0,0);
-    
-    cone(vec3(0, 15, -6),vec3(1,0,0),vec3(1,1,0),M_PI * 15/180, r, hit);
-	cyl(vec3(10, 0, -5),vec3(1,0,0),vec3(0.8,0.7,0.4),2, r, hit);
-    cyl(vec3(55, 20, -5),vec3(15,6,4),vec3(0.9,0,0.4),5, r, hit);
-   	plane(vec3(1,1,0),vec3(1,1,-6),vec3(1,0.8,0), r, hit);
-   	plane(vec3(1,1,0),vec3(1,1,-6),vec3(1,0.8,0), r, hit);
-    sphere(vec3(0, 0, -10),vec3(0,0,1),4, r, hit);
-    sphere(vec3(5, 5, -20),vec3(0,1,0),4, r, hit);
-    sphere(vec3(10, 10, -10),vec3(1,0,0),4, r, hit);
-    //planel(vec3(0, 0, 1),vec3(0,0,-2),vec3(1,0,0),vec3(1,0,0),2, r, hit);
-    //cube(vec3(0,20,-2),vec3(1,0,0),2,r,hit);
-    
-    /* Position de la lumière */
-    //sphere(vec3(0, 18, -12),vec3(255,255,255),0.5, r, hit);
-   	 
-    return hit;
-}
-
 /* Définition de l'effet de la lumière sur les objets présents */
 float		light(vec3 pos, Ray r, Hit h)
 {
@@ -253,8 +229,8 @@ float		light(vec3 pos, Ray r, Hit h)
 	shad.dir = -d;
 	shad.pos = pos;
 	h.dist = sqrt(v3.x + v3.y + v3.z);
-	Hit sha = shadow(shad);
-	if (sha.dist < h.dist - EPSI * h.dist)
+	Hit sha = scene(shad);
+	if (sha.dist < h.dist - (EPSI * h.dist))
 		return (0.15);
 	float lambert = dot(d, h.norm);
 	if (lambert < 0.15)

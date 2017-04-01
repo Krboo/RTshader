@@ -1,5 +1,5 @@
 #define M_PI 3.1415926535897932384626433832795
-#define EPSI 0.001f // pb avec 0.0001f
+#define EPSI 0.0001f
 
 struct		Ray
 {
@@ -44,7 +44,7 @@ void plane(vec3 norm, vec3 pos, vec3 color, Ray r, inout Hit h)
 {
 	float t = (dot(norm,pos) - (dot (norm, r.pos))) / dot (norm, r.dir);
 
-	if (t <= EPSI)
+	if (t < EPSI)
 		return;
 
 	if (t < h.dist) {
@@ -156,13 +156,13 @@ void cone(vec3 v, vec3 dir,vec3 color,float f, Ray r, inout Hit h) {
 
 	float g = b*b - 4*a*c;
 
-	if (g < 0)
+	if (g <= 0)
 		return ;
 
 	float t1 = (-sqrt(g) - b) / (2*a);
-	float t2 = (sqrt(g) - b) / (2*a);
+	//float t2 = (sqrt(g) - b) / (2*a);
 
-	if (t1 < EPSI)
+	if (t1 < 0) 
 		return ;
 
 	if (t1 < h.dist){ 
@@ -233,9 +233,9 @@ bool			shadows(vec3 pos, vec3 d, Hit h)
 	Hit		shad;
 
 	shadow.dir = d;
-	shadow.pos = pos;
+	shadow.pos = pos + EPSI;
 	shad = scene(shadow);
-	if (shad.dist < h.dist)// - (EPSI * h.dist ))
+	if (shad.dist < h.dist)
 		return (true);
 	return (false);	
 }
@@ -247,13 +247,13 @@ float			reflexion(Hit h, vec3 d, vec3 pos)
 
    reflexion.dir = h.norm;
    reflexion.pos = h.pos;
-   ref = scene(reflexion);
+ 	ref = scene(reflexion);
 	vec3 v1 = h.pos - ref.pos;
 	vec3 v3 = v1 * v1;
 	vec3 d2 = normalize(v1);
    if (ref.dist < h.dist )//- (EPSI * h.dist))
-   		return (dot(d2, ref.norm));
-   return (0.0);
+  		return (dot(d2, ref.norm));
+   return (0);
 }
 
 /* Définition de l'effet de la lumière sur les objets présents */
@@ -262,14 +262,14 @@ float		light(vec3 pos, Ray r, Hit h)
 	vec3 v1 = pos - h.pos;
 	vec3 v3 = v1 * v1;
 	vec3 d = normalize(v1);
-	float lambert = 0.15;
+	float lambert ;
 	float ref ;
 	h.dist = sqrt(v3.x + v3.y + v3.z);
-	//ref = reflexion(h, d, pos);
+	ref = reflexion(h, d, pos);
 	if (shadows(h.pos , d, h))
 		return (0.15);
-	//if (ref != 0)
-	//	return (ref);
+	if (ref != 0)
+		return (ref);
 	lambert = limit(dot(d, h.norm), 0.15, 1.0);
 	return (lambert);
 }

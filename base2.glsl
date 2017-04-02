@@ -298,7 +298,7 @@ float		light(vec3 pos, Ray r, Hit h)
 }
 
 /* Création d'un rayon */
-vec3	raytrace(vec3 ro, vec3 rd)
+vec3	raytrace(vec3 ro, vec3 rd, Obj	l[10])
 {
 	vec3		color = vec3(0,0,0);
 	Ray			r;
@@ -307,18 +307,6 @@ vec3	raytrace(vec3 ro, vec3 rd)
 	float 		l2;
 	float 		l3;
 
-	/*OBJ : data (type/material/size) + pos + dir + color */
-	Obj	l[10];
-	l[0] = Obj(vec3(0,0,4), vec3(15, 5, -10), vec3(0,0,0), vec3(0,0,1));
-	l[1] = Obj(vec3(0,0,4), vec3(8, 9, -30), vec3(0,0,0), vec3(0,1,0));
-	l[2] = Obj(vec3(0,0,4), vec3(15, 15, -45), vec3(0,0,0), vec3(1,0,0));
-	l[3] = Obj(vec3(0,0,4), vec3(40, 90, 100), vec3(0,0,0), vec3(1,0,0));
-	l[4] = Obj(vec3(1,0,2), vec3(100, -125, 245), vec3(2.8,0.7,0.4), vec3(1,1,0));
-	l[5] = Obj(vec3(1,0,12), vec3(30, -55, -25), vec3(3,0.7,0.8), vec3(1, 0, 0.8));
-	l[6] = Obj(vec3(1,0,9), vec3(75, -50, -160), vec3(15,5,0.4), vec3(0.5,0.5,0.5));
-	l[7] = Obj(vec3(2,0,0), vec3(1,1,0),vec3(1,1,-6),vec3(1,0.8,0));
-	l[8] = Obj(vec3(2,0,0), vec3(0,1,0),vec3(50,-280,-30),vec3(0.5,0.8,0));
-	l[9] = Obj(vec3(3,0,0.2), vec3(0, 15, -6),vec3(1,0,0),vec3(1,1,0));
 
 	r.dir = rd;
 	r.pos = ro;
@@ -344,5 +332,17 @@ void		mainImage(vec2 coord)
 	vec3	right = normalize(cross(forw, vec3(0, 1, 0)));
 	vec3	up = normalize(cross(right, forw));
 	vec3	rd = normalize(uv.x * right + uv.y * up + fov * forw);
-	fragColor = vec4(raytrace(cameraPos, rd), 1);
+	/*OBJ : data (type/material/size) + pos + dir + color */
+	Obj	l[10];
+	l[0] = Obj(vec3(0,0,4), vec3(15, 5, -10), vec3(0,0,0), vec3(0,0,1));
+	l[1] = Obj(vec3(0,0,4), vec3(8, 9, -30), vec3(0,0,0), vec3(0,1,0));
+	l[2] = Obj(vec3(0,0,4), vec3(15, 15, -45), vec3(0,0,0), vec3(1,0,0));
+	l[3] = Obj(vec3(0,0,4), vec3(40, 90, 100), vec3(0,0,0), vec3(1,0,0));
+	l[4] = Obj(vec3(1,0,2), vec3(100, -125, 245), vec3(2.8,0.7,0.4), vec3(1,1,0));
+	l[5] = Obj(vec3(1,0,12), vec3(30, -55, -25), vec3(3,0.7,0.8), vec3(1, 0, 0.8));
+	l[6] = Obj(vec3(1,0,9), vec3(75, -50, -160), vec3(15,5,0.4), vec3(0.5,0.5,0.5));
+	l[7] = Obj(vec3(2,0,0), vec3(1,1,0),vec3(1,1,-6),vec3(1,0.8,0));
+	l[8] = Obj(vec3(2,0,0), vec3(0,1,0),vec3(50,-280,-30),vec3(0.5,0.8,0));
+	l[9] = Obj(vec3(3,0,0.2), vec3(0, 15, -6),vec3(1,0,0),vec3(1,1,0));
+	fragColor = vec4(raytrace(cameraPos, rd, l), 1);
 }

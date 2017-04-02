@@ -21,6 +21,25 @@ struct	Coupe
 	vec3	rot;
 };
 
+struct	Obj
+{
+	vec3	data;	//type, mat, size
+	vec3	pos;
+	vec3	dir;
+	vec3	color;
+};
+
+Obj		create_obj(vec3 data, vec3 pos, vec3 dir, vec3 color)
+{
+	Obj		new;
+
+	new.data = data;
+	new.pos = pos;
+	new.dir = dir;
+	new.color = color;
+	return (new);
+}
+
 /* Découpe de sphère */
 
 bool decoupe(vec3 centre, vec3 inter, Coupe c, Coupe c2)
@@ -198,20 +217,32 @@ void cube(vec3 pos, vec3 pent, float c, Ray r, inout Hit hit)
 Hit		scene(Ray r)
 {
 	Hit		hit;
-
 	hit.dist = 1e20;
 	hit.color = vec3(0,0,0);
 
-	cone(vec3(0, 15, -6),vec3(1,0,0),vec3(1,1,0),M_PI * 15/180, r, hit);
-	cyl(vec3(100, -125, 245),vec3(1,1,0),vec3(0.8,0.7,0.4),2, r, hit);
-	cyl(vec3(30, -55, -25),vec3(1,0,0.8),vec3(0.8,0.7,0.8),12, r, hit);
-	cyl(vec3(75, -50, -160),vec3(15,6,4),vec3(0.9,0,0.4),9, r, hit);
+	/*OBJ : data (type/material/size) + pos + dir + color */
+
+	Obj a = Obj(vec3(0,0,4), vec3(15, 5, -10), vec3(0,0,0), vec3(0,0,1));
+	Obj b = Obj(vec3(0,0,4), vec3(8, 9, -30), vec3(0,0,0), vec3(0,1,0));
+	Obj c = Obj(vec3(0,0,4), vec3(15, 15, -45), vec3(0,0,0), vec3(1,0,0));
+	Obj d = Obj(vec3(0,0,4), vec3(40, 90, 100), vec3(0,0,0), vec3(1,0,0));
+	Obj e = Obj(vec3(1,0,2), vec3(100, -125, 245), vec3(2.8,0.7,0.4), vec3(1,1,0));
+	Obj f = Obj(vec3(1,0,12), vec3(30, -55, -25), vec3(3,0.7,0.8), vec3(1, 0, 0.8));
+	Obj g = Obj(vec3(1,0,9), vec3(75, -50, -160), vec3(15,5,0.4), vec3(0.5,0.5,0.5));
+	
+	float list[5] = float[5](3.4, 4.2, 5.0, 5.2, 1.1);
+	Obj l[2] = Obj[2](Obj(vec3(0,0,4), vec3(15, 5, -10), vec3(0,0,0), vec3(0,0,1)), Obj(vec3(0,0,4), vec3(8, 9, -30), vec3(0,0,0), vec3(0,1,0)));
+	sphere(l[0].pos,l[0].color,l[0].data.z, r, hit);
+	sphere(b.pos,b.color,b.data.z, r, hit);
+	sphere(c.pos,c.color,c.data.z, r, hit);
+	sphere(d.pos,d.color,d.data.z, r, hit);
+	cyl(e.pos,e.dir,e.color,e.data.z, r, hit);
+	cyl(f.pos,e.dir,f.color,f.data.z, r, hit);
+	cyl(g.pos,e.dir,g.color,g.data.z, r, hit);
 	plane(vec3(1,1,0),vec3(1,1,-6),vec3(1,0.8,0), r, hit);
 	plane(vec3(0,1,0),vec3(50,-280,-30),vec3(0.5,0.8,0), r, hit);
-	sphere(vec3(15, 5, -10),vec3(0,0,1),4, r, hit);
-	sphere(vec3(8, 9, -30),vec3(0,1,0),4, r, hit);
-	sphere(vec3(15, 15, -45),vec3(1,0,0),4, r, hit);
-	sphere(vec3(40, 90, 100),vec3(1,0,0),4, r, hit);
+	cone(vec3(0, 15, -6),vec3(1,0,0),vec3(1,1,0),M_PI * 15/180, r, hit);
+		
 	//cube(vec3(0,20,-2),vec3(1,0,0),2,r,hit);
 
 	/* Position de la lumière */
@@ -265,11 +296,11 @@ float		light(vec3 pos, Ray r, Hit h)
 	float lambert ;
 	float ref ;
 	h.dist = sqrt(v3.x + v3.y + v3.z);
-	ref = reflexion(h, d, pos);
 	if (shadows(h.pos , d, h))
 		return (0.15);
-	if (ref != 0)
-		return (ref);
+	//ref = reflexion(h, d, pos);
+	//if (ref != 0)
+	//	return (ref);
 	lambert = limit(dot(d, h.norm), 0.15, 1.0);
 	return (lambert);
 }

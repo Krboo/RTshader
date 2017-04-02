@@ -214,34 +214,26 @@ void cube(vec3 pos, vec3 pent, float c, Ray r, inout Hit hit)
 	hit.pos = hit.pos + vec3(2,0,0);
 }
 
-Hit		scene(Ray r)
+Hit		scene(Ray r, Obj[10] l)
 {
+	int i;
 	Hit		hit;
 	hit.dist = 1e20;
 	hit.color = vec3(0,0,0);
 
-	/*OBJ : data (type/material/size) + pos + dir + color */
+	i = 10;
 
-	Obj a = Obj(vec3(0,0,4), vec3(15, 5, -10), vec3(0,0,0), vec3(0,0,1));
-	Obj b = Obj(vec3(0,0,4), vec3(8, 9, -30), vec3(0,0,0), vec3(0,1,0));
-	Obj c = Obj(vec3(0,0,4), vec3(15, 15, -45), vec3(0,0,0), vec3(1,0,0));
-	Obj d = Obj(vec3(0,0,4), vec3(40, 90, 100), vec3(0,0,0), vec3(1,0,0));
-	Obj e = Obj(vec3(1,0,2), vec3(100, -125, 245), vec3(2.8,0.7,0.4), vec3(1,1,0));
-	Obj f = Obj(vec3(1,0,12), vec3(30, -55, -25), vec3(3,0.7,0.8), vec3(1, 0, 0.8));
-	Obj g = Obj(vec3(1,0,9), vec3(75, -50, -160), vec3(15,5,0.4), vec3(0.5,0.5,0.5));
-	
-	float list[5] = float[5](3.4, 4.2, 5.0, 5.2, 1.1);
-	Obj l[2] = Obj[2](Obj(vec3(0,0,4), vec3(15, 5, -10), vec3(0,0,0), vec3(0,0,1)), Obj(vec3(0,0,4), vec3(8, 9, -30), vec3(0,0,0), vec3(0,1,0)));
-	sphere(l[0].pos,l[0].color,l[0].data.z, r, hit);
-	sphere(b.pos,b.color,b.data.z, r, hit);
-	sphere(c.pos,c.color,c.data.z, r, hit);
-	sphere(d.pos,d.color,d.data.z, r, hit);
-	cyl(e.pos,e.dir,e.color,e.data.z, r, hit);
-	cyl(f.pos,e.dir,f.color,f.data.z, r, hit);
-	cyl(g.pos,e.dir,g.color,g.data.z, r, hit);
-	plane(vec3(1,1,0),vec3(1,1,-6),vec3(1,0.8,0), r, hit);
-	plane(vec3(0,1,0),vec3(50,-280,-30),vec3(0.5,0.8,0), r, hit);
-	cone(vec3(0, 15, -6),vec3(1,0,0),vec3(1,1,0),M_PI * 15/180, r, hit);
+	while (--i > -1)
+	{
+		if (l[i].data.x == 0)
+			sphere(l[i].pos, l[i].color, l[i].data.z, r, hit);
+		else if (l[i].data.x == 1)
+			cyl(l[i].pos, l[i].dir, l[i].color, l[i].data.z, r, hit);
+		else if(l[i].data.x == 2)
+			plane(l[i].pos, l[i].dir, l[i].color, r, hit);
+		else if(l[i].data.x == 3)
+			cone(l[i].pos, l[i].dir, l[i].color, l[i].data.z, r, hit);
+	}
 		
 	//cube(vec3(0,20,-2),vec3(1,0,0),2,r,hit);
 
@@ -257,7 +249,7 @@ float		limit(float value, float min, float max)
 {
 	return (value < min ? min : (value > max ? max : value));
 }
-
+/*
 bool			shadows(vec3 pos, vec3 d, Hit h)
 {
 	Ray		shadow;
@@ -286,7 +278,7 @@ float			reflexion(Hit h, vec3 d, vec3 pos)
   		return (dot(d2, ref.norm));
    return (0);
 }
-
+*/
 /* Définition de l'effet de la lumière sur les objets présents */
 float		light(vec3 pos, Ray r, Hit h)
 {
@@ -296,8 +288,8 @@ float		light(vec3 pos, Ray r, Hit h)
 	float lambert ;
 	float ref ;
 	h.dist = sqrt(v3.x + v3.y + v3.z);
-	if (shadows(h.pos , d, h))
-		return (0.15);
+//	if (shadows(h.pos , d, h))
+//		return (0.15);
 	//ref = reflexion(h, d, pos);
 	//if (ref != 0)
 	//	return (ref);
@@ -306,7 +298,7 @@ float		light(vec3 pos, Ray r, Hit h)
 }
 
 /* Création d'un rayon */
-vec3	raycast(vec3 ro, vec3 rd)
+vec3	raytrace(vec3 ro, vec3 rd)
 {
 	vec3		color = vec3(0,0,0);
 	Ray			r;
@@ -315,10 +307,22 @@ vec3	raycast(vec3 ro, vec3 rd)
 	float 		l2;
 	float 		l3;
 
+	/*OBJ : data (type/material/size) + pos + dir + color */
+	Obj	l[10];
+	l[0] = Obj(vec3(0,0,4), vec3(15, 5, -10), vec3(0,0,0), vec3(0,0,1));
+	l[1] = Obj(vec3(0,0,4), vec3(8, 9, -30), vec3(0,0,0), vec3(0,1,0));
+	l[2] = Obj(vec3(0,0,4), vec3(15, 15, -45), vec3(0,0,0), vec3(1,0,0));
+	l[3] = Obj(vec3(0,0,4), vec3(40, 90, 100), vec3(0,0,0), vec3(1,0,0));
+	l[4] = Obj(vec3(1,0,2), vec3(100, -125, 245), vec3(2.8,0.7,0.4), vec3(1,1,0));
+	l[5] = Obj(vec3(1,0,12), vec3(30, -55, -25), vec3(3,0.7,0.8), vec3(1, 0, 0.8));
+	l[6] = Obj(vec3(1,0,9), vec3(75, -50, -160), vec3(15,5,0.4), vec3(0.5,0.5,0.5));
+	l[7] = Obj(vec3(2,0,0), vec3(1,1,0),vec3(1,1,-6),vec3(1,0.8,0));
+	l[8] = Obj(vec3(2,0,0), vec3(0,1,0),vec3(50,-280,-30),vec3(0.5,0.8,0));
+	l[9] = Obj(vec3(3,0,0.2), vec3(0, 15, -6),vec3(1,0,0),vec3(1,1,0));
 
 	r.dir = rd;
 	r.pos = ro;
-	h = scene(r);
+	h = scene(r, l);
 	l1 = light(vec3(0,18,-10), r, h);
 	l2 = light(vec3(15, 15, -25), r, h);
 	l3 = light(vec3(45, 20, 25), r, h);
@@ -340,5 +344,5 @@ void		mainImage(vec2 coord)
 	vec3	right = normalize(cross(forw, vec3(0, 1, 0)));
 	vec3	up = normalize(cross(right, forw));
 	vec3	rd = normalize(uv.x * right + uv.y * up + fov * forw);
-	fragColor = vec4(raycast(cameraPos, rd), 1);
+	fragColor = vec4(raytrace(cameraPos, rd), 1);
 }

@@ -30,8 +30,9 @@ struct	Obj
 };
 
 /* Obj = 4 * vec3 ( data(type/material/size) + pos + dir + color )*/
-#define SIZE 10
 uniform	Obj o[10] = Obj[10](Obj(vec3(0,0,4), vec3(15, 5, -10), vec3(0,0,0), vec3(0,0,1)), Obj(vec3(0,0,4), vec3(8, 9, -30), vec3(0,0,0), vec3(0,1,0)), Obj(vec3(0,0,4), vec3(15, 15, -45), vec3(0,0,0), vec3(1,0,0)), Obj(vec3(0,0,4), vec3(40, 90, 100), vec3(0,0,0), vec3(1,0,0)), Obj(vec3(1,0,2), vec3(100, -125, 245), vec3(2.8,0.7,0.4), vec3(1,1,0)), Obj(vec3(1,0,12), vec3(30, -55, -25), vec3(3,0.7,0.8), vec3(1, 0, 0.8)), Obj(vec3(1,0,9), vec3(75, -50, -160), vec3(15,5,0.4), vec3(0.2,0.5,0.5)), Obj(vec3(2,0,0), vec3(1,1,0),vec3(1,1,-6),vec3(1,0.8,0)), Obj(vec3(2,0,0), vec3(0,1,0),vec3(50,-280,-30),vec3(0.5,0.8,0)), Obj(vec3(3,0,0.2), vec3(0, 15, -6),vec3(1,0,0),vec3(1,1,0)));
+
+uniform	Obj l[3] = Obj[3](Obj(vec3(0,0,0), vec3(0, 18, -10), vec3(0,0,0), vec3(0,0,0)), Obj(vec3(0,0,0), vec3(15, 15, -25), vec3(0,0,0), vec3(0,0,0)), Obj(vec3(0,0,0), vec3(45, 20, 25), vec3(0,0,0), vec3(0,0,0)));
 
 Obj		create_obj(vec3 data, vec3 pos, vec3 dir, vec3 color)
 {
@@ -224,7 +225,7 @@ Hit		scene(Ray r)
 	Hit		hit;
 	hit.dist = 1e20;
 	hit.color = vec3(0,0,0);
-	while (++i < SIZE)
+	while (++i < o.length())
 	{
 		if (o[i].data.x == 0)
 			sphere(o[i].pos, o[i].color, o[i].data.z, r, hit);
@@ -235,7 +236,6 @@ Hit		scene(Ray r)
 		else if(o[i].data.x == 3)
 			cone(o[i].pos, o[i].dir, o[i].color, o[i].data.z, r, hit);
 	}
-		
 	//cube(vec3(0,20,-2),vec3(1,0,0),2,r,hit);
 	//sphere(vec3(0, 18, -11),vec3(255,255,255),0.5, r, hit);
 	//sphere(vec3(15, 15, -24),vec3(255,255,255),0.5, r, hit);
@@ -303,21 +303,18 @@ vec3	raytrace(vec3 ro, vec3 rd)
 	vec3		color = vec3(0,0,0);
 	Ray			r;
 	Hit			h;
-	float 		l1;
-	float 		l2;
-	float 		l3;
-	
-
+	float 		lum = 0;
+	int			i = -1;
 	r.dir = rd;
 	r.pos = ro;
 	h = scene(r);
-	l1 = light(vec3(0,18,-10), r, h);
-	l2 = light(vec3(15, 15, -25), r, h);
-	l3 = light(vec3(45, 20, 25), r, h);
-	color = h.color * ((l1 + l2 + l3) / 3);
+
+	while (++i < l.length())
+			lum += light(l[i].pos, r, h);
+	lum /= l.length();
+	color = h.color * lum;
 	return color;
 }
-
 
 void		mainImage(vec2 coord)
 {

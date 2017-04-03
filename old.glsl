@@ -1,5 +1,5 @@
 #define M_PI 3.1415926535897932384626433832795
-#define EPSI 0.0001f
+#define EPSI 0.001f
 
 struct		Ray
 {
@@ -28,6 +28,11 @@ struct	Obj
 	vec3	dir;
 	vec3	color;
 };
+
+/* objects + lights ( data + pos + dir + color )*/
+uniform	Obj o[10] = Obj[10](Obj(vec3(0,0,4), vec3(15, 5, -10), vec3(0,0,0), vec3(0,0,1)), Obj(vec3(0,0,4), vec3(8, 9, -30), vec3(0,0,0), vec3(0,1,0)), Obj(vec3(0,0,4), vec3(15, 15, -45), vec3(0,0,0), vec3(1,0,0)), Obj(vec3(0,0,4), vec3(40, 90, 100), vec3(0,0,0), vec3(1,0,0)), Obj(vec3(1,0,2), vec3(100, -125, 245), vec3(2.8,0.7,0.4), vec3(1,1,0)), Obj(vec3(1,0,12), vec3(30, -55, -25), vec3(3,0.7,0.8), vec3(1, 0, 0.8)), Obj(vec3(1,0,9), vec3(75, -50, -160), vec3(15,5,0.4), vec3(0.2,0.5,0.5)), Obj(vec3(2,0,0), vec3(1,1,0),vec3(1,1,-6),vec3(1,0.8,0)), Obj(vec3(2,0,0), vec3(0,1,0),vec3(50,-280,-30),vec3(0.5,0.8,0)), Obj(vec3(3,0,0.2), vec3(0, 15, -6),vec3(1,0,0),vec3(1,1,0)));
+
+uniform	Obj l[3] = Obj[3](Obj(vec3(0,0,0), vec3(0, 18, -10), vec3(0,0,0), vec3(0,0,0)), Obj(vec3(0,0,0), vec3(15, 15, -25), vec3(0,0,0), vec3(0,0,0)), Obj(vec3(0,0,0), vec3(45, 20, 25), vec3(0,0,0), vec3(0,0,0)));
 
 Obj		create_obj(vec3 data, vec3 pos, vec3 dir, vec3 color)
 {
@@ -130,26 +135,26 @@ void sphere (vec3 pos, vec3 color, float f, Ray r, inout Hit h) {
 void cyl (vec3 v, vec3 dir, vec3 color, float f, Ray r, inout Hit h) {
 	vec3 d = r.pos - v;
 
-	dir = normalize(dir);
-	float a = dot(r.dir,r.dir) - pow(dot(r.dir, dir), 2);
-	float b = 2 * (dot(r.dir, d) - dot(r.dir, dir) * dot(d, dir));
-	float c = dot(d, d) - pow(dot(d, dir), 2) - pow(f, 2);
+	vec3 dire = normalize(dir);
+	float a = dot(r.dir,r.dir) - pow(dot(r.dir, dire), 2);
+	float b = 2 * (dot(r.dir, d) - dot(r.dir, dire) * dot(d, dire));
+	float c = dot(d, d) - pow(dot(d, dire), 2) - pow(f, 2);
 
 	float g = b*b - 4*a*c;
 
-	if (g < 0)
+	if (g < EPSI)
 		return;
 
 	float t1 = (-sqrt(g) - b) / (2*a);
 	//float t2 = (sqrt(g) - b) / (2*a);
 
-	if (t1 < 0)
+	if (t1 < EPSI)
 		return ;
 
-	if (t1 >= EPSI && t1 < h.dist){
+	if (t1 < h.dist){
 		h.dist = t1 - EPSI;
 		h.pos = r.pos + r.dir * h.dist;
-		vec3 temp = dir * (dot(r.dir, dir) * h.dist + dot(r.pos - v, dir));
+		vec3 temp = dire * (dot(r.dir, dire) * h.dist + dot(r.pos - v, dire));
 		vec3 tmp = h.pos - v;
 		h.color = color;
 		h.norm = tmp - temp;
@@ -168,10 +173,10 @@ void cyl (vec3 v, vec3 dir, vec3 color, float f, Ray r, inout Hit h) {
 void cone(vec3 v, vec3 dir,vec3 color,float f, Ray r, inout Hit h) {
 	vec3 d = r.pos - v;
 
-	dir = normalize(dir);
-	float a = dot(r.dir, r.dir) - (1 + pow(tan(f), 2)) * pow(dot(r.dir, dir), 2);
-	float b = 2 * (dot(r.dir, d) - (1 + pow(tan(f), 2)) * dot(r.dir, dir) * dot(d , dir));
-	float c = dot(d, d) - (1 + pow(tan(f), 2)) * pow(dot(d, dir), 2);
+	vec3 dire = normalize(dir);
+	float a = dot(r.dir, r.dir) - (1 + pow(tan(f), 2)) * pow(dot(r.dir, dire), 2);
+	float b = 2 * (dot(r.dir, d) - (1 + pow(tan(f), 2)) * dot(r.dir, dire) * dot(d , dire));
+	float c = dot(d, d) - (1 + pow(tan(f), 2)) * pow(dot(d, dire), 2);
 
 	float g = b*b - 4*a*c;
 
@@ -187,7 +192,7 @@ void cone(vec3 v, vec3 dir,vec3 color,float f, Ray r, inout Hit h) {
 	if (t1 < h.dist){ 
 		h.dist = t1 ;
 		h.pos = r.pos + r.dir * h.dist;
-		vec3 temp = (dir * (dot(r.dir, dir) * h.dist + dot(r.pos - v, dir))) * (1 + pow(tan(f), 2));
+		vec3 temp = (dire * (dot(r.dir, dire) * h.dist + dot(r.pos - v, dire))) * (1 + pow(tan(f), 2));
 		vec3 tmp = h.pos - v;
 		h.color = color;
 		h.norm = tmp - temp;
@@ -214,27 +219,24 @@ void cube(vec3 pos, vec3 pent, float c, Ray r, inout Hit hit)
 	hit.pos = hit.pos + vec3(2,0,0);
 }
 
-Hit		scene(Ray r, Obj l[10])
+Hit		scene(Ray r)
 {
-	int i = 10;
+	int i = -1;
 	Hit		hit;
 	hit.dist = 1e20;
 	hit.color = vec3(0,0,0);
-	
-	while (--i > -1)
+	while (++i < o.length())
 	{
-		if (l[i].data.x == 0)
-			sphere(l[i].pos, l[i].color, l[i].data.z, r, hit);
-		else if (l[i].data.x == 1)
-			cyl(l[i].pos, l[i].dir, l[i].color, l[i].data.z, r, hit);
-		else if(l[i].data.x == 2)
-			plane(l[i].pos, l[i].dir, l[i].color, r, hit);
-		else if(l[i].data.x == 3)
-			cone(l[i].pos, l[i].dir, l[i].color, l[i].data.z, r, hit);
+		if (o[i].data.x == 0)
+			sphere(o[i].pos, o[i].color, o[i].data.z, r, hit);
+		else if (o[i].data.x == 1)
+			cyl(o[i].pos, o[i].dir, o[i].color, o[i].data.z, r, hit);
+		else if(o[i].data.x == 2)
+			plane(o[i].pos, o[i].dir, o[i].color, r, hit);
+		else if(o[i].data.x == 3)
+			cone(o[i].pos, o[i].dir, o[i].color, o[i].data.z, r, hit);
 	}
-		
 	//cube(vec3(0,20,-2),vec3(1,0,0),2,r,hit);
-
 	//sphere(vec3(0, 18, -11),vec3(255,255,255),0.5, r, hit);
 	//sphere(vec3(15, 15, -24),vec3(255,255,255),0.5, r, hit);
 	//sphere(vec3(45, 20, 25),vec3(255,255,255),0.5, r, hit);
@@ -246,21 +248,20 @@ float		limit(float value, float min, float max)
 {
 	return (value < min ? min : (value > max ? max : value));
 }
-
-bool			shadows(vec3 pos, vec3 d, Hit h, Obj l[10])
+bool			shadows(vec3 pos, vec3 d, Hit h)
 {
 	Ray		shadow;
 	Hit		shad;
 
 	shadow.dir = d;
-	shadow.pos = pos + EPSI;
-	shad = scene(shadow, l);
+	shadow.pos = pos;
+	shad = scene(shadow);
 	if (shad.dist < h.dist)
+	//if (shad.dist < h.dist - EPSI * h.dist)
 		return (true);
 	return (false);	
 }
 
-/*
 float			reflexion(Hit h, vec3 d, vec3 pos)
 {
    Ray reflexion;
@@ -272,21 +273,22 @@ float			reflexion(Hit h, vec3 d, vec3 pos)
 	vec3 v1 = h.pos - ref.pos;
 	vec3 v3 = v1 * v1;
 	vec3 d2 = normalize(v1);
-   if (ref.dist < h.dist )//- (EPSI * h.dist))
+   if (ref.dist < h.dist) 
   		return (dot(d2, ref.norm));
    return (0);
 }
-*/
+
 /* Définition de l'effet de la lumière sur les objets présents */
-float		light(vec3 pos, Ray r, Hit h, Obj l[10])
+float		light(vec3 pos, Ray r, Hit h)
 {
 	vec3 v1 = pos - h.pos;
 	vec3 v3 = v1 * v1;
 	vec3 d = normalize(v1);
 	float lambert ;
 	//float ref ;
-	//h.dist = sqrt(v3.x + v3.y + v3.z);
-	if (shadows(h.pos , d, h, l))
+	
+	h.dist = sqrt(v3.x + v3.y + v3.z);
+	if (shadows(h.pos, d, h))
 		return (0.15);
 	//ref = reflexion(h, d, pos);
 	//if (ref != 0)
@@ -295,44 +297,24 @@ float		light(vec3 pos, Ray r, Hit h, Obj l[10])
 	return (lambert);
 }
 
-/*OBJ : data (type/material/size) + pos + dir + color */
-//Obj[10]		map(void)
-//{
-//	return (l);
-//}
-
 /* Création d'un rayon */
 vec3	raytrace(vec3 ro, vec3 rd)
 {
 	vec3		color = vec3(0,0,0);
 	Ray			r;
 	Hit			h;
-	float 		l1;
-	float 		l2;
-	float 		l3;
-
+	float 		lum = 0;
+	int			i = -1;
 	r.dir = rd;
 	r.pos = ro;
-	Obj	l[10];
-	l[0] = Obj(vec3(0,0,4), vec3(15, 5, -10), vec3(0,0,0), vec3(0,0,1));
-	l[1] = Obj(vec3(0,0,4), vec3(8, 9, -30), vec3(0,0,0), vec3(0,1,0));
-	l[2] = Obj(vec3(0,0,4), vec3(15, 15, -45), vec3(0,0,0), vec3(1,0,0));
-	l[3] = Obj(vec3(0,0,4), vec3(40, 90, 100), vec3(0,0,0), vec3(1,0,0));
-	l[4] = Obj(vec3(1,0,2), vec3(100, -125, 245), vec3(2.8,0.7,0.4), vec3(1,1,0));
-	l[5] = Obj(vec3(1,0,12), vec3(30, -55, -25), vec3(3,0.7,0.8), vec3(1, 0, 0.8));
-	l[6] = Obj(vec3(1,0,9), vec3(75, -50, -160), vec3(15,5,0.4), vec3(0.2,0.5,0.5));
-	l[7] = Obj(vec3(2,0,0), vec3(1,1,0),vec3(1,1,-6),vec3(1,0.8,0));
-	l[8] = Obj(vec3(2,0,0), vec3(0,1,0),vec3(50,-280,-30),vec3(0.5,0.8,0));
-	l[9] = Obj(vec3(3,0,0.2), vec3(0, 15, -6),vec3(1,0,0),vec3(1,1,0));
-	h = scene(r, l);
+	h = scene(r);
 
-	l1 = light(vec3(0,18,-10), r, h, l);
-	l2 = light(vec3(15, 15, -25), r, h, l);
-	l3 = light(vec3(45, 20, 25), r, h, l);
-	color = h.color * ((l1 + l2 + l3) / 3);
+	while (++i < l.length())
+			lum += light(l[i].pos, r, h);
+	lum /= l.length();
+	color = h.color * lum;
 	return color;
 }
-
 
 void		mainImage(vec2 coord)
 {

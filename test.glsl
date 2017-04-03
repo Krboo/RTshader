@@ -1,5 +1,5 @@
 #define M_PI 3.1415926535897932384626433832795
-#define EPSI 0.0001f
+#define EPSI 0.001f
 
 struct		Ray
 {
@@ -132,26 +132,26 @@ void sphere (vec3 pos, vec3 color, float f, Ray r, inout Hit h) {
 void cyl (vec3 v, vec3 dir, vec3 color, float f, Ray r, inout Hit h) {
 	vec3 d = r.pos - v;
 
-	dir = normalize(dir);
-	float a = dot(r.dir,r.dir) - pow(dot(r.dir, dir), 2);
-	float b = 2 * (dot(r.dir, d) - dot(r.dir, dir) * dot(d, dir));
-	float c = dot(d, d) - pow(dot(d, dir), 2) - pow(f, 2);
+	vec3 dire = normalize(dir);
+	float a = dot(r.dir,r.dir) - pow(dot(r.dir, dire), 2);
+	float b = 2 * (dot(r.dir, d) - dot(r.dir, dire) * dot(d, dire));
+	float c = dot(d, d) - pow(dot(d, dire), 2) - pow(f, 2);
 
 	float g = b*b - 4*a*c;
 
-	if (g < 0)
+	if (g < EPSI)
 		return;
 
 	float t1 = (-sqrt(g) - b) / (2*a);
 	//float t2 = (sqrt(g) - b) / (2*a);
 
-	if (t1 < 0)
+	if (t1 < EPSI)
 		return ;
 
-	if (t1 >= EPSI && t1 < h.dist){
+	if (t1 < h.dist){
 		h.dist = t1 - EPSI;
 		h.pos = r.pos + r.dir * h.dist;
-		vec3 temp = dir * (dot(r.dir, dir) * h.dist + dot(r.pos - v, dir));
+		vec3 temp = dire * (dot(r.dir, dire) * h.dist + dot(r.pos - v, dire));
 		vec3 tmp = h.pos - v;
 		h.color = color;
 		h.norm = tmp - temp;
@@ -170,10 +170,10 @@ void cyl (vec3 v, vec3 dir, vec3 color, float f, Ray r, inout Hit h) {
 void cone(vec3 v, vec3 dir,vec3 color,float f, Ray r, inout Hit h) {
 	vec3 d = r.pos - v;
 
-	dir = normalize(dir);
-	float a = dot(r.dir, r.dir) - (1 + pow(tan(f), 2)) * pow(dot(r.dir, dir), 2);
-	float b = 2 * (dot(r.dir, d) - (1 + pow(tan(f), 2)) * dot(r.dir, dir) * dot(d , dir));
-	float c = dot(d, d) - (1 + pow(tan(f), 2)) * pow(dot(d, dir), 2);
+	vec3 dire = normalize(dir);
+	float a = dot(r.dir, r.dir) - (1 + pow(tan(f), 2)) * pow(dot(r.dir, dire), 2);
+	float b = 2 * (dot(r.dir, d) - (1 + pow(tan(f), 2)) * dot(r.dir, dire) * dot(d , dire));
+	float c = dot(d, d) - (1 + pow(tan(f), 2)) * pow(dot(d, dire), 2);
 
 	float g = b*b - 4*a*c;
 
@@ -189,7 +189,7 @@ void cone(vec3 v, vec3 dir,vec3 color,float f, Ray r, inout Hit h) {
 	if (t1 < h.dist){ 
 		h.dist = t1 ;
 		h.pos = r.pos + r.dir * h.dist;
-		vec3 temp = (dir * (dot(r.dir, dir) * h.dist + dot(r.pos - v, dir))) * (1 + pow(tan(f), 2));
+		vec3 temp = (dire * (dot(r.dir, dire) * h.dist + dot(r.pos - v, dire))) * (1 + pow(tan(f), 2));
 		vec3 tmp = h.pos - v;
 		h.color = color;
 		h.norm = tmp - temp;
@@ -218,11 +218,11 @@ void cube(vec3 pos, vec3 pent, float c, Ray r, inout Hit hit)
 
 Hit		scene(Ray r)
 {
-	int i = 10;
+	int i = -1;
 	Hit		hit;
 	hit.dist = 1e20;
 	hit.color = vec3(0,0,0);
-	while (--i > -1)
+	while (++i < 10)
 	{
 		if (l[i].data.x == 0)
 			sphere(l[i].pos, l[i].color, l[i].data.z, r, hit);
@@ -252,13 +252,14 @@ bool			shadows(vec3 pos, vec3 d, Hit h)
 	Hit		shad;
 
 	shadow.dir = d;
-	shadow.pos = pos + EPSI;
+	shadow.pos = pos;
 	shad = scene(shadow);
-	if (shad.dist < 1e20 && shad.dist < h.dist )
+	if (shad.dist < h.dist)
+	//if (shad.dist < h.dist - EPSI * h.dist)
 		return (true);
 	return (false);	
 }
-/*
+
 float			reflexion(Hit h, vec3 d, vec3 pos)
 {
    Ray reflexion;
@@ -270,11 +271,11 @@ float			reflexion(Hit h, vec3 d, vec3 pos)
 	vec3 v1 = h.pos - ref.pos;
 	vec3 v3 = v1 * v1;
 	vec3 d2 = normalize(v1);
-   if (ref.dist < h.dist )//- (EPSI * h.dist))
+   if (ref.dist < h.dist) 
   		return (dot(d2, ref.norm));
    return (0);
 }
-*/
+
 /* Définition de l'effet de la lumière sur les objets présents */
 float		light(vec3 pos, Ray r, Hit h)
 {
@@ -283,7 +284,8 @@ float		light(vec3 pos, Ray r, Hit h)
 	vec3 d = normalize(v1);
 	float lambert ;
 	//float ref ;
-	//h.dist = sqrt(v3.x + v3.y + v3.z);
+	
+	h.dist = sqrt(v3.x + v3.y + v3.z);
 	if (shadows(h.pos, d, h))
 		return (0.15);
 	//ref = reflexion(h, d, pos);
@@ -292,12 +294,6 @@ float		light(vec3 pos, Ray r, Hit h)
 	lambert = limit(dot(d, h.norm), 0.15, 1.0);
 	return (lambert);
 }
-
-/*OBJ : data (type/material/size) + pos + dir + color */
-//Obj[10]		map(void)
-//{
-//	return (l);
-//}
 
 /* Création d'un rayon */
 vec3	raytrace(vec3 ro, vec3 rd)
@@ -314,7 +310,6 @@ vec3	raytrace(vec3 ro, vec3 rd)
 	r.pos = ro;
 	h = scene(r);
 	l1 = light(vec3(0,18,-10), r, h);
-
 	l2 = light(vec3(15, 15, -25), r, h);
 	l3 = light(vec3(45, 20, 25), r, h);
 	color = h.color * ((l1 + l2 + l3) / 3);

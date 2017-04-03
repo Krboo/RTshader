@@ -29,6 +29,8 @@ struct	Obj
 	vec3	color;
 };
 
+uniform	Obj l[10] = Obj[10](Obj(vec3(0,0,4), vec3(15, 5, -10), vec3(0,0,0), vec3(0,0,1)), Obj(vec3(0,0,4), vec3(8, 9, -30), vec3(0,0,0), vec3(0,1,0)), Obj(vec3(0,0,4), vec3(15, 15, -45), vec3(0,0,0), vec3(1,0,0)), Obj(vec3(0,0,4), vec3(40, 90, 100), vec3(0,0,0), vec3(1,0,0)), Obj(vec3(1,0,2), vec3(100, -125, 245), vec3(2.8,0.7,0.4), vec3(1,1,0)), Obj(vec3(1,0,12), vec3(30, -55, -25), vec3(3,0.7,0.8), vec3(1, 0, 0.8)), Obj(vec3(1,0,9), vec3(75, -50, -160), vec3(15,5,0.4), vec3(0.2,0.5,0.5)), Obj(vec3(2,0,0), vec3(1,1,0),vec3(1,1,-6),vec3(1,0.8,0)), Obj(vec3(2,0,0), vec3(0,1,0),vec3(50,-280,-30),vec3(0.5,0.8,0)), Obj(vec3(3,0,0.2), vec3(0, 15, -6),vec3(1,0,0),vec3(1,1,0)));
+
 Obj		create_obj(vec3 data, vec3 pos, vec3 dir, vec3 color)
 {
 	Obj		new;
@@ -214,13 +216,12 @@ void cube(vec3 pos, vec3 pent, float c, Ray r, inout Hit hit)
 	hit.pos = hit.pos + vec3(2,0,0);
 }
 
-Hit		scene(Ray r, Obj l[10])
+Hit		scene(Ray r)
 {
 	int i = 10;
 	Hit		hit;
 	hit.dist = 1e20;
 	hit.color = vec3(0,0,0);
-	
 	while (--i > -1)
 	{
 		if (l[i].data.x == 0)
@@ -234,7 +235,6 @@ Hit		scene(Ray r, Obj l[10])
 	}
 		
 	//cube(vec3(0,20,-2),vec3(1,0,0),2,r,hit);
-
 	//sphere(vec3(0, 18, -11),vec3(255,255,255),0.5, r, hit);
 	//sphere(vec3(15, 15, -24),vec3(255,255,255),0.5, r, hit);
 	//sphere(vec3(45, 20, 25),vec3(255,255,255),0.5, r, hit);
@@ -246,20 +246,18 @@ float		limit(float value, float min, float max)
 {
 	return (value < min ? min : (value > max ? max : value));
 }
-
-bool			shadows(vec3 pos, vec3 d, Hit h, Obj l[10])
+bool			shadows(vec3 pos, vec3 d, Hit h)
 {
 	Ray		shadow;
 	Hit		shad;
 
 	shadow.dir = d;
 	shadow.pos = pos + EPSI;
-	shad = scene(shadow, l);
-	if (shad.dist < h.dist)
+	shad = scene(shadow);
+	if (shad.dist < 1e20 && shad.dist < h.dist )
 		return (true);
 	return (false);	
 }
-
 /*
 float			reflexion(Hit h, vec3 d, vec3 pos)
 {
@@ -278,7 +276,7 @@ float			reflexion(Hit h, vec3 d, vec3 pos)
 }
 */
 /* Définition de l'effet de la lumière sur les objets présents */
-float		light(vec3 pos, Ray r, Hit h, Obj l[10])
+float		light(vec3 pos, Ray r, Hit h)
 {
 	vec3 v1 = pos - h.pos;
 	vec3 v3 = v1 * v1;
@@ -286,7 +284,7 @@ float		light(vec3 pos, Ray r, Hit h, Obj l[10])
 	float lambert ;
 	//float ref ;
 	//h.dist = sqrt(v3.x + v3.y + v3.z);
-	if (shadows(h.pos , d, h, l))
+	if (shadows(h.pos, d, h))
 		return (0.15);
 	//ref = reflexion(h, d, pos);
 	//if (ref != 0)
@@ -310,25 +308,15 @@ vec3	raytrace(vec3 ro, vec3 rd)
 	float 		l1;
 	float 		l2;
 	float 		l3;
+	
 
 	r.dir = rd;
 	r.pos = ro;
-	Obj	l[10];
-	l[0] = Obj(vec3(0,0,4), vec3(15, 5, -10), vec3(0,0,0), vec3(0,0,1));
-	l[1] = Obj(vec3(0,0,4), vec3(8, 9, -30), vec3(0,0,0), vec3(0,1,0));
-	l[2] = Obj(vec3(0,0,4), vec3(15, 15, -45), vec3(0,0,0), vec3(1,0,0));
-	l[3] = Obj(vec3(0,0,4), vec3(40, 90, 100), vec3(0,0,0), vec3(1,0,0));
-	l[4] = Obj(vec3(1,0,2), vec3(100, -125, 245), vec3(2.8,0.7,0.4), vec3(1,1,0));
-	l[5] = Obj(vec3(1,0,12), vec3(30, -55, -25), vec3(3,0.7,0.8), vec3(1, 0, 0.8));
-	l[6] = Obj(vec3(1,0,9), vec3(75, -50, -160), vec3(15,5,0.4), vec3(0.2,0.5,0.5));
-	l[7] = Obj(vec3(2,0,0), vec3(1,1,0),vec3(1,1,-6),vec3(1,0.8,0));
-	l[8] = Obj(vec3(2,0,0), vec3(0,1,0),vec3(50,-280,-30),vec3(0.5,0.8,0));
-	l[9] = Obj(vec3(3,0,0.2), vec3(0, 15, -6),vec3(1,0,0),vec3(1,1,0));
-	h = scene(r, l);
+	h = scene(r);
+	l1 = light(vec3(0,18,-10), r, h);
 
-	l1 = light(vec3(0,18,-10), r, h, l);
-	l2 = light(vec3(15, 15, -25), r, h, l);
-	l3 = light(vec3(45, 20, 25), r, h, l);
+	l2 = light(vec3(15, 15, -25), r, h);
+	l3 = light(vec3(45, 20, 25), r, h);
 	color = h.color * ((l1 + l2 + l3) / 3);
 	return color;
 }

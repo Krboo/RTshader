@@ -210,17 +210,17 @@ void cone(vec3 v, vec3 dir,vec3 color,float f, Ray r, inout Hit h) {
 }
 
 /* Fonction du calcul de l'intersection entre un rayon et un cube (manque la rotation) */
-void cube(vec3 pos, vec3 rot, float c, Ray r, inout Hit hit)
+void cube(vec3 pos, vec3 rot, vec3 color, float c, Ray r, inout Hit hit)
 {
 	r.dir -= r.pos;
 	r.pos += rot;
 	r.dir += r.pos;
-	planel(vec3(0, 0, 1),vec3(pos.x,pos.y,pos.z - c/2),rot,vec3(1,0,0),c, r, hit);
-	planel(vec3(0, 0, 1),vec3(pos.x,pos.y,pos.z + c/2),rot,vec3(1,0,0),c, r, hit);
-	planel(vec3(0, 1, 0),vec3(pos.x,pos.y - c/2,pos.z),rot,vec3(0,1,0),c, r, hit);
-	planel(vec3(0, 1, 0),vec3(pos.x,pos.y + c/2,pos.z),rot,vec3(0,1,0),c, r, hit);
-	planel(vec3(1, 0, 0),vec3(pos.x - c/2,pos.y,pos.z),rot,vec3(0,0,1),c, r, hit);
-	planel(vec3(1, 0, 0),vec3(pos.x + c/2,pos.y,pos.z),rot,vec3(0,0,1),c, r, hit);
+	planel(vec3(0, 0, 1),vec3(pos.x,pos.y,pos.z - c/2),rot,color,c, r, hit);
+	planel(vec3(0, 0, 1),vec3(pos.x,pos.y,pos.z + c/2),rot,color,c, r, hit);
+	planel(vec3(0, 1, 0),vec3(pos.x,pos.y - c/2,pos.z),rot,color,c, r, hit);
+	planel(vec3(0, 1, 0),vec3(pos.x,pos.y + c/2,pos.z),rot,color,c, r, hit);
+	planel(vec3(1, 0, 0),vec3(pos.x - c/2,pos.y,pos.z),rot,color,c, r, hit);
+	planel(vec3(1, 0, 0),vec3(pos.x + c/2,pos.y,pos.z),rot,color,c, r, hit);
 }
 
 Hit		scene(Ray r)
@@ -229,7 +229,7 @@ Hit		scene(Ray r)
 	Hit		hit;
 	hit.dist = 1e20;
 	hit.color = vec3(0,0,0);
-	sphere(vec3(15, 5, -10), vec3(0,0,1), 4, r, hit );
+	sphere(vec3(15, 5, -10), vec3(0,0,0), 4, r, hit );
 	sphere(vec3(8, 9, -30), vec3(0,1,0), 4, r, hit);
 	sphere(vec3(15, 15, -45), vec3(1,0,0), 4, r, hit);
 	sphere(vec3(20, 30, -50), vec3(1,0.6,0), 4, r, hit);
@@ -237,10 +237,10 @@ Hit		scene(Ray r)
 	cyl(vec3(30, -55, -25), vec3(3,0.7,0.8), vec3(1, 0, 0.8), 12, r, hit);
 	cyl(vec3(75, -50, -160), vec3(15,5,0.4), vec3(0.2,0.5,0.5), 9, r, hit);
 	plane(vec3(1,1,0),vec3(1,1,-6),vec3(1,0.8,0), r, hit);
-	plane(vec3(0,1,0),vec3(50,-280,-30),vec3(0.5,0.8,0), r, hit);
+	plane(vec3(0,1,0),vec3(50,-280,-30),vec3(1,1,1), r, hit);
 	//sphere(vec3(51, 51, 51), vec3(1,1,1), 0.5, r, hit);
 	//sphere(vec3(16, 16, -24), vec3(1,1,1), 0.5, r, hit);
-	cube(vec3(5, 15, -25), vec3(0,0,0), 4, r, hit);
+	cube(vec3(5, 15, -25), vec3(0,0,0), vec3(0,1,1), 4, r, hit);
 	//Obj(vec3(3,0,0.2), vec3(0, 15, -6),vec3(1,0,0),vec3(1,1,0)));
 	//Obj(vec3(0,0,0), vec3(0, 18, -10), vec3(0,0,0), vec3(0,0,0));
 	//Obj(vec3(0,0,0), vec3(15, 15, -25), vec3(0,0,0), vec3(0,0,0));
@@ -296,17 +296,11 @@ float		light(vec3 pos, Ray r, Hit h)
 	vec3 d = normalize(v1);
 
 
-	float ambient = 0.2;
-	float ref = 0;
+	float ambient = 0.20;
 	float	lambert = 0.;
 	h.dist = sqrt(v3.x + v3.y + v3.z);
 	if (shadows(h.pos, d, h))
 		return (ambient);
-	//ref = reflexion(h, d, pos) + ambient;
-	//if (ref > ambient)
-	//	return (ref);
-	//else
-		//return (ambient);
 	lambert = limit(dot(h.norm, d), 0.0, 1.0);
 	lambert += ambient;
 	return (lambert);
@@ -318,6 +312,7 @@ vec3	raytrace(vec3 ro, vec3 rd)
 	vec3		color = vec3(0,0,0);
 	vec3		lum = vec3(0,0,0);
 	vec3		lumref = vec3(0,0,0);
+	vec3		lumref2 = vec3(0,0,0);
 	Ray			r;
 	Ray			ref;
 	Hit			h;
@@ -331,14 +326,15 @@ vec3	raytrace(vec3 ro, vec3 rd)
 	ref.dir = h.norm;
 	ref.pos = h.pos;
 	h2 = scene(ref);
-		lum += h.color * light(vec3(15, 15, -25), r, h) ;
+	lum = h.color * (light(vec3(15, 15, -25), r, h));
+	lumref = h2.color * light(vec3(15, 15, -25), r, h2);
+	ref.dir = h2.norm;
+	ref.pos = h2.pos;
+	h2 = scene(ref);
+	lumref2 = h2.color * light(vec3(15, 15, -25), r, h2);
 	if (h.dist < 1e20)
-		lum += (lum + h2.color * light(vec3(15, 15, -25), r, h2) / 2) ;
-
+		lum = (lum + lumref + lumref2) / 3;
 	//lum += light(vec3(50, 50, 50), r, h);
-	lum /= 2;
-	lum += 0.15;
-	//color = (lumref + lum) / 2;
 color = lum;
 	return color;
 }

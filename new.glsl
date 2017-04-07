@@ -239,9 +239,9 @@ Hit		scene(Ray r)
 	sphere(vec3(8, 9, -30), vec3(0,1,0), vec4(5,1,1,0), r, hit);
 	sphere(vec3(15, 15, -45), vec3(1,0,0), vec4(5,0,1,0), r, hit);
 	sphere(vec3(20, 30, -50), vec3(1,0.6,0), vec4(4,0,1,0), r, hit);
-	//cyl(vec3(100, -125, 245), vec3(2.8,0.7,0.4), vec3(12,0,0), vec4(100,1,1,0), r, hit);
-	//cyl(vec3(30, -55, -25), vec3(3,0.7,0.8), vec3(2,0,0.8), vec4(12,0,1,0), r, hit);
-	//cyl(vec3(75, -50, -160), vec3(15,5,0.4), vec3(4,0.5,0.5), vec4(9,0,1,0), r, hit);
+	cyl(vec3(100, -125, 245), vec3(0,0,1), vec3(12,0,0), vec4(42,1,1,0), r, hit);
+	cyl(vec3(30, -55, -25), vec3(3,0.7,0.8), vec3(2,0,0.8), vec4(12,0,1,0), r, hit);
+	cyl(vec3(75, -50, -160), vec3(15,5,0.4), vec3(4,0.5,0.5), vec4(9,0,1,0), r, hit);
 	plane(vec3(1,1,0),vec3(1,1,-6),vec3(1,0.8,0), vec4(0,0,0,0), r, hit);
 	plane(vec3(0,1,0),vec3(50,-280,-30),vec3(1,1,1),vec4(0,0,0,0), r, hit);
 	//sphere(vec3(51, 51, 51), vec3(1,1,1), 0.5, r, hit);
@@ -277,17 +277,34 @@ bool			shadows(vec3 pos, vec3 d, Hit h)
 	return (false);
 }
 
-vec3		light2(vec3 pos, Ray r, Hit h);
+/* Définition de l'effet de la lumière sur les objets présents */
+vec3		light(vec3 pos, Ray r, Hit h)
+{
+	vec3 v1 = pos - h.pos;
+	vec3 v3 = v1 * v1;
+	vec3 d = normalize(v1);
+	vec3 color;
+
+  color = vec3(0,0,0);//AMBIENT * h.color;
+	h.dist = sqrt(v3.x + v3.y + v3.z);
+	if (h.dist > 1e20)
+		return (color);
+	if (shadows(h.pos, d, h))
+		return (color);
+	color += (limit(dot(h.norm, d), 0.0, 1.0)) * h.color;
+  return (color);
+}
 
 /* Définition de la light */
-vec3		light(Ray ref, Hit h)
+vec3		calc_light(vec3 pos, Ray ref, Hit h)
 {
 	Hit	h2 = h;
 	vec3 lambert;
 	vec3 reflect = vec3(0,0,0);
+	vec3 ambient = h.color * AMBIENT;
 	int		i = 0;
 	float on_off = 1;
-	lambert = light2(vec3(15, 15, -25), ref, h);
+	lambert = light(pos, ref, h);
 	while (++i < 5)
 	{
 	h = h2;
@@ -295,41 +312,28 @@ vec3		light(Ray ref, Hit h)
 	ref.pos = h.pos;
 	h2 = scene(ref);
 	on_off = on_off * h.data.y;
-	reflect += light2(vec3(15, 15, -25), ref, h2) * on_off;
+	reflect += light(pos, ref, h2) * on_off;
 }
 	//creflect = (reflect + reflect2 + reflect3) / 3;
-	return lambert + reflect;
+	return ((lambert + reflect) / 2) + ambient;
 }
 
-/* Définition de l'effet de la lumière sur les objets présents */
-vec3		light2(vec3 pos, Ray r, Hit h)
-{
-	vec3 v1 = pos - h.pos;
-	vec3 v3 = v1 * v1;
-	vec3 d = normalize(v1);
-	vec3 color;
-
-  color = AMBIENT * h.color;
-	h.dist = sqrt(v3.x + v3.y + v3.z);
-	if (h.dist > 1e20)
-		return (vec3(0,0,0));
-	if (shadows(h.pos, d, h))
-		return (color);
-	color += (limit(dot(h.norm, d), 0.0, 0.8)) * h.color;
-  return (color);
-}
 
 /* Création d'un rayon */
 vec3	raytrace(vec3 ro, vec3 rd)
 {
 	Ray			r;
 	Hit			h;
-	int			i = -1;
+	vec3		pos_lum = vec3(15,15,-25);
+	vec3		pos_lum2 = vec3(30, 30, 0);
+	vec3		color = vec3(0,0,0);
 
   r.dir = rd;
 	r.pos = ro;
 	h = scene(r);
-  return (light(r, h));
+	color = calc_light(pos_lum, r, h);
+	color += calc_light(pos_lum2, r, h);
+  return (color / 2);
 }
 
 void		mainImage(vec2 coord)

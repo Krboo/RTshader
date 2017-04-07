@@ -282,33 +282,21 @@ vec3		light2(vec3 pos, Ray r, Hit h);
 /* Définition de la light */
 vec3		light(Ray ref, Hit h)
 {
-	Hit	h2;
+	Hit	h2 = h;
 	vec3 lambert;
 	vec3 reflect = vec3(0,0,0);
-	vec3 reflect2;
-	vec3 reflect3;
 	int		i = 0;
 	float on_off = 1;
 	lambert = light2(vec3(15, 15, -25), ref, h);
-
+	while (++i < 5)
+	{
+	h = h2;
 	ref.dir = h.norm;
 	ref.pos = h.pos;
 	h2 = scene(ref);
 	on_off = on_off * h.data.y;
 	reflect += light2(vec3(15, 15, -25), ref, h2) * on_off;
-
-	ref.dir = h2.norm;
-	ref.pos = h2.pos;
-	Hit h3 = scene(ref);
-	on_off = on_off * h2.data.y;
-	reflect += light2(vec3(15, 15, -25), ref, h3) * on_off;
-
-	ref.dir = h3.norm;
-	ref.pos = h3.pos;
-	Hit h4 = scene(ref);
-	on_off = on_off * h3.data.y;
-	reflect += light2(vec3(15, 15, -25), ref, h4) * on_off;
-
+}
 	//creflect = (reflect + reflect2 + reflect3) / 3;
 	return lambert + reflect;
 }

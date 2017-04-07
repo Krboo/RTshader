@@ -236,17 +236,17 @@ Hit		scene(Ray r)
 	hit.color = vec3(0,0,0);
 	hit.data = vec4(0,0,0,0);
 	sphere(vec3(15, 5, -10), vec3(0,0,0), vec4(5,1,1,0), r, hit );
-	sphere(vec3(8, 9, -30), vec3(0,1,0), vec4(5,1,1,0), r, hit);
-	sphere(vec3(15, 15, -45), vec3(1,0,0), vec4(5,0,1,0), r, hit);
-	sphere(vec3(20, 30, -50), vec3(1,0.6,0), vec4(4,0,1,0), r, hit);
-	cyl(vec3(100, -125, 245), vec3(0,0,1), vec3(12,0,0), vec4(42,1,1,0), r, hit);
-	cyl(vec3(30, -55, -25), vec3(3,0.7,0.8), vec3(2,0,0.8), vec4(12,0,1,0), r, hit);
-	cyl(vec3(75, -50, -160), vec3(15,5,0.4), vec3(4,0.5,0.5), vec4(9,0,1,0), r, hit);
+	sphere(vec3(8, 9, -30), vec3(0,0,0), vec4(5,1,1,0), r, hit);
+	sphere(vec3(15, 15, -45), vec3(1,0,0), vec4(5,1,1,0), r, hit);
+	sphere(vec3(20, 30, -50), vec3(1,1,1), vec4(4,1,1,0), r, hit);
+	cyl(vec3(100, -125, 245), vec3(0,0,1), vec3(1,0.4,0.6), vec4(42,0,1,0), r, hit);
+	cyl(vec3(30, -55, -25), vec3(0.5,0.7,0.8), vec3(0.2,0.2,0.2), vec4(12,0,1,0), r, hit);
+	cyl(vec3(75, -50, -160), vec3(1,1,0.4), vec3(0.5,0.3,0.5), vec4(9,0,1,0), r, hit);
 	plane(vec3(1,1,0),vec3(1,1,-6),vec3(1,0.8,0), vec4(0,0,0,0), r, hit);
 	plane(vec3(0,1,0),vec3(50,-280,-30),vec3(1,1,1),vec4(0,0,0,0), r, hit);
 	//sphere(vec3(51, 51, 51), vec3(1,1,1), 0.5, r, hit);
 	//sphere(vec3(16, 16, -24), vec3(1,1,1), 0.5, r, hit);
-	//cube(vec3(5, 15, -25), vec3(0,0,0), vec3(0,1,1), vec4(2,0,1,0), r, hit);
+	cube(vec3(5, 15, -25), vec3(0,0,0), vec3(0.8,0.5,0.5), vec4(2,1,1,0), r, hit);
 	//Obj(vec3(3,0,0.2), vec3(0, 15, -6),vec3(1,0,0),vec3(1,1,0)));
 	//Obj(vec3(0,0,0), vec3(0, 18, -10), vec3(0,0,0), vec3(0,0,0));
 	//Obj(vec3(0,0,0), vec3(15, 15, -25), vec3(0,0,0), vec3(0,0,0));
@@ -285,7 +285,7 @@ vec3		light(vec3 pos, Ray r, Hit h)
 	vec3 d = normalize(v1);
 	vec3 color;
 
-  color = vec3(0,0,0);//AMBIENT * h.color;
+  color = vec3(0,0,0);
 	h.dist = sqrt(v3.x + v3.y + v3.z);
 	if (h.dist > 1e20)
 		return (color);
@@ -315,7 +315,8 @@ vec3		calc_light(vec3 pos, Ray ref, Hit h)
 	reflect += light(pos, ref, h2) * on_off;
 }
 	//creflect = (reflect + reflect2 + reflect3) / 3;
-	return ((lambert + reflect) / 2) + ambient;
+//	return (ambient);
+	return (lambert + reflect + ambient);
 }
 
 

@@ -168,14 +168,14 @@ Hit		scene(Ray r)
 	hit.data = vec4(0,0,0,0); //size ou decoupe pour plane + reflexion + ? + ? 
 	sphere(vec3(15, 5, -10), vec3(0,0,0), vec4(5,1,1,0), r, hit );
 	sphere(vec3(8, 9, -30), vec3(0.8,0.4,0.4), vec4(5,1,1,0), r, hit);
-	sphere(vec3(15, 15, -45), vec3(0.8,0.5,0), vec4(5,1,1,0), r, hit);
-	sphere(vec3(20, 30, -50), vec3(0.75,0.5,0.55), vec4(4,1,1,0), r, hit);
+	sphere(vec3(15, 15, -45), vec3(0.8,0.5,0), vec4(5,0.2,1,0), r, hit);
+	sphere(vec3(20, 30, -50), vec3(0.75,0.5,0.55), vec4(4,0,1,0), r, hit);
 	//cyl(vec3(100, -125, 245), vec3(0,1,1), vec3(1,0.4,0.6), vec4(22,0,1,0), r, hit);
-	cyl(vec3(30, -55, -25), vec3(1,1,0), vec3(0.35,0.5,0.5), vec4(14,0,1,0), r, hit);
+	cyl(vec3(30, -55, -25), vec3(1,1,0), vec3(0.85,0.4,0.4), vec4(14,0,1,0), r, hit);
 	//cyl(vec3(75, -50, -160), vec3(1,1,0.4), vec3(0.5,0.3,0.5), vec4(9,0,1,0), r, hit);
 //	cone(vec3(75, 10, 200), vec3(1,10,0), vec3(0.5,0.5,0.8), vec4(4,1,0,0), r, hit);
 	plane(vec3(1,1,0),vec3(1,1,-6),vec3(1,0.8,0), vec4(0,0,0,0), r, hit);
-	//plane(vec3(1,1,0),vec3(50,-280,-30),vec3(1,1,1),vec4(0,0,0,0), r, hit);
+	//plane(vec3(0.5,0.7,1),vec3(80,130,-50),vec3(1,1,1),vec4(0,0,0,0), r, hit);
 	plane(vec3(0,1,1),vec3(50,-100,-30),vec3(0.3,0.5,0.6),vec4(0,1,0,0), r, hit);
 //	cube(vec3(5, 15, -25), vec3(0,0,0), vec3(0.8,0.5,0.5), vec4(2,1,1,0), r, hit);
 	//sphere(vec3(45, 20, 25),vec3(255,255,255),vec4(0.5, 0.6, 0.5, 0.2), r, hit);
@@ -212,7 +212,7 @@ vec3		light(vec3 pos, Ray r, Hit h)
 	h.dist = sqrt(v3.x + v3.y + v3.z);
 	if (h.dist > 1e20 || shadows(h.pos, d, h))
 		return (color);
-	color += (limit(dot(h.norm, d), 0.0, 1.0)) * h.color;
+	color += (limit(dot(h.norm, d), 0.0, 1.0)) * vec3(1,1,1);
   return (color);
 }
 
@@ -224,7 +224,7 @@ vec3		calc_light(vec3 pos, Ray ref, Hit h)
 	vec3 reflect = vec3(0,0,0);
 	int		i = 0;
 	float on_off = 1;
-	lambert = light(pos, ref, h);
+	lambert = light(pos, ref, h) * h.color;
 	while (++i < 5)
 	{
 		h = h2;
@@ -232,7 +232,7 @@ vec3		calc_light(vec3 pos, Ray ref, Hit h)
 		ref.pos = h.pos;
 		h2 = scene(ref);
 		on_off = on_off * h.data.y;
-		reflect += light(pos, ref, h2) * on_off;
+		reflect +=light(pos, ref, h2) * on_off * h2.color;
 	}
 	return lambert + reflect;
 }

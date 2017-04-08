@@ -1,7 +1,8 @@
-precision highp float;
+//precision highp float;
 #define M_PI 3.1415926535897932384626433832795
 #define EPSI 0.001f
 #define AMBIENT 0.2
+
 struct		Ray
 {
 	vec3	dir;
@@ -30,8 +31,6 @@ struct	Obj
 	vec3	dir;
 	vec3	color;
 };
-
-
 
 Obj		create_obj(vec3 data, vec3 pos, vec3 dir, vec3 color)
 {
@@ -185,20 +184,16 @@ void cone(vec3 v, vec3 dir,vec3 color,vec4 data, Ray r, inout Hit h) {
 	float c = dot(d, d) - (1 + pow(tan(data.y), 2)) * pow(dot(d, dir), 2);
 
 	float g = b*b - 4*a*c;
-
 	if (g <= 0)
 		return ;
-
 	float t1 = (-sqrt(g) - b) / (2*a);
-	//float t2 = (sqrt(g) - b) / (2*a);
-
 	if (t1 < EPSI)
 		return ;
 
 	if (t1 < h.dist){
 		h.dist = t1 ;
 		h.pos = r.pos + r.dir * h.dist;
-		vec3 temp = (dir * (dot(r.dir, dir) * h.dist + dot(r.pos - v, dir))) * (1 + pow(tan(data.y), 2));
+		vec3 temp = (dir * (dot(r.dir, dir) * h.dist + dot(r.pos - v, dir))) * (1 + pow(tan(data.x), 2));
 		vec3 tmp = h.pos - v;
 		h.color = color;
 		h.norm = tmp - temp;
@@ -234,28 +229,20 @@ Hit		scene(Ray r)
 	Hit		hit;
 	hit.dist = 1e20;
 	hit.color = vec3(0,0,0);
-	hit.data = vec4(0,0,0,0);
+	hit.data = vec4(0,0,0,0); //size + reflexion + ? + ?
 	sphere(vec3(15, 5, -10), vec3(0,0,0), vec4(5,1,1,0), r, hit );
-	sphere(vec3(8, 9, -30), vec3(0,0,0), vec4(5,1,1,0), r, hit);
-	sphere(vec3(15, 15, -45), vec3(1,0,0), vec4(5,1,1,0), r, hit);
-	sphere(vec3(20, 30, -50), vec3(1,1,1), vec4(4,1,1,0), r, hit);
+	sphere(vec3(8, 9, -30), vec3(0.8,0.4,0.4), vec4(5,1,1,0), r, hit);
+	sphere(vec3(15, 15, -45), vec3(0.8,0.5,0), vec4(5,1,1,0), r, hit);
+	sphere(vec3(20, 30, -50), vec3(0.75,0.5,0.55), vec4(4,1,1,0), r, hit);
 	cyl(vec3(100, -125, 245), vec3(0,0,1), vec3(1,0.4,0.6), vec4(42,0,1,0), r, hit);
-	cyl(vec3(30, -55, -25), vec3(0.5,0.7,0.8), vec3(0.2,0.2,0.2), vec4(12,0,1,0), r, hit);
+	cyl(vec3(30, -55, -25), vec3(1,1,0), vec3(0.35,0.5,0.5), vec4(14,0,1,0), r, hit);
 	cyl(vec3(75, -50, -160), vec3(1,1,0.4), vec3(0.5,0.3,0.5), vec4(9,0,1,0), r, hit);
+	//cone(vec3(75, 10, 200), vec3(1,10,0), vec3(0.5,0.5,0.8), vec4(4,1,0,0), r, hit);
 	plane(vec3(1,1,0),vec3(1,1,-6),vec3(1,0.8,0), vec4(0,0,0,0), r, hit);
 	plane(vec3(0,1,0),vec3(50,-280,-30),vec3(1,1,1),vec4(0,0,0,0), r, hit);
-	//sphere(vec3(51, 51, 51), vec3(1,1,1), 0.5, r, hit);
-	//sphere(vec3(16, 16, -24), vec3(1,1,1), 0.5, r, hit);
-	cube(vec3(5, 15, -25), vec3(0,0,0), vec3(0.8,0.5,0.5), vec4(2,1,1,0), r, hit);
-	//Obj(vec3(3,0,0.2), vec3(0, 15, -6),vec3(1,0,0),vec3(1,1,0)));
-	//Obj(vec3(0,0,0), vec3(0, 18, -10), vec3(0,0,0), vec3(0,0,0));
-	//Obj(vec3(0,0,0), vec3(15, 15, -25), vec3(0,0,0), vec3(0,0,0));
-	//Obj(vec3(0,0,0), vec3(45, 20, 25), vec3(0,0,0), vec3(0,0,0)));
-
-	//sphere(vec3(0, 18, -11),vec3(255,255,255),0.5, r, hit);
-	//sphere(vec3(15, 15, -24),vec3(255,255,255),0.5, r, hit);
-	//sphere(vec3(45, 20, 25),vec3(255,255,255),0.5, r, hit);
-
+	plane(vec3(1,1,1),vec3(50,-280,-30),vec3(0.3,0.5,0.6),vec4(1,0,0,0), r, hit);
+	//cube(vec3(5, 15, -25), vec3(0,0,0), vec3(0.8,0.5,0.5), vec4(2,1,1,0), r, hit);
+	//sphere(vec3(45, 20, 25),vec3(255,255,255),vec4(0.5, 0.6, 0.5, 0.2), r, hit);
 	return hit;
 }
 
@@ -314,9 +301,7 @@ vec3		calc_light(vec3 pos, Ray ref, Hit h)
 	on_off = on_off * h.data.y;
 	reflect += light(pos, ref, h2) * on_off;
 }
-	//creflect = (reflect + reflect2 + reflect3) / 3;
-//	return (ambient);
-	return (lambert + reflect + ambient);
+	return lambert + reflect + ambient;
 }
 
 
@@ -326,7 +311,7 @@ vec3	raytrace(vec3 ro, vec3 rd)
 	Ray			r;
 	Hit			h;
 	vec3		pos_lum = vec3(15,15,-25);
-	vec3		pos_lum2 = vec3(30, 30, 0);
+	vec3		pos_lum2 = vec3(100, 75, 0);
 	vec3		color = vec3(0,0,0);
 
   r.dir = rd;

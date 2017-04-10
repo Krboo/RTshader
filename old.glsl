@@ -216,7 +216,6 @@ void cube(vec3 pos, vec3 rot, float data, Material mat, Ray r, inout Hit hit)
 	plane(vec3(1, 0, 0),vec3(pos.x + data/2,pos.y,pos.z),rot, data, mat, r, hit);
 }
 
-
 Hit		scene(Ray r)
 {
 	int i = -1;
@@ -225,6 +224,7 @@ Hit		scene(Ray r)
 	hit.mat.texture = vec4(0,0,0,0);
   //size + reflexion + ? + ?
 	sphere(vec3(15, 5, -10), 5, Material(vec4(1,0,1,1), vec4(0,0,0,0), vec4(0,0,0,0), vec4(1,1,1,1), vec4(0,0,0,0), vec4(0,0,0,0), vec4(0,0,0,0)), r, hit );
+	sphere(vec3(8, 9, -30), 5, Material(vec4(0.8,0.8,0.5,1), vec4(0,0,0,0), vec4(0,0,0,0), vec4(0,1,1,1), vec4(0,0,0,0), vec4(0,0,0,0), vec4(0,0,0,0)), r, hit );
 	//sphere(vec3(8, 9, -30), vec3(0,0,1), vec4(5,1,1,0), r, hit);
 	//sphere(vec3(15, 15, -45), vec3(0.8,0.5,0), vec4(5,1,1,0), r, hit);
 	//sphere(vec3(20, 30, -50), vec3(0.75,0.5,0.55), vec4(4,1,1,0), r, hit);
@@ -232,7 +232,7 @@ Hit		scene(Ray r)
 	//cyl(vec3(0, 0, 0), vec3(1,0,0), vec3(1,0,0), vec4(1,0,1,0), r, hit);
 	//cyl(vec3(0, 0, 0), vec3(0,1,0), vec3(0,1,0), vec4(1,0,1,0), r, hit);
 	//cone(vec3(75, 10, 200), vec3(1,1,0), vec3(1,1,0), vec4(30,0,0,0), r, hit);
-	//plane(vec3(1,1,0),vec3(1,1,-6),vec3(0,0,0),vec3(0,0,1), vec4(0,0,0,0), r, hit);
+	plane(vec3(1,1,0),vec3(1,1,-6), vec3(0,0,0), 0.0, Material(vec4(0.5,0.7,0.8,0), vec4(0,0,0,0), vec4(0,0,0,0), vec4(0,1,1,1), vec4(0,0,0,0), vec4(0,0,0,0), vec4(0,0,0,0)), r, hit);
 	//plane(vec3(0,1,0),vec3(50,-280,-30),vec3(0,0,0),vec3(1,1,1),vec4(0,0,0,0), r, hit);
 	//plane(vec3(1,1,1),vec3(50,-280,-30),vec3(0,0,0),vec3(0.3,0.5,0.6),vec4(0,0,0,0), r, hit);
 	//cube(vec3(5, 15, -25), vec3(0,0,0), vec3(0.8,0.5,0.5), vec4(2,1,1,0), r, hit);
@@ -266,7 +266,7 @@ vec3		light(vec3 pos, Ray r, Hit h)
 	vec3 d = normalize(v1);
 	vec3 color;
 
-  color = vec3(0,0,0);
+  color = vec3(AMBIENT * vec3(h.mat.texture.xyz));
 	h.dist = sqrt(v3.x + v3.y + v3.z);
 	if (h.dist > 1e20)
 		return (color);
@@ -282,7 +282,7 @@ vec3		calc_light(vec3 pos, Ray ref, Hit h)
 	Hit	h2 = h;
 	vec3 lambert;
 	vec3 reflect = vec3(0,0,0);
-	vec3 ambient = vec3(h.mat.texture.x, h.mat.texture.y, h.mat.texture.z) * AMBIENT;
+	vec3 ambient = vec3(h.mat.texture.xyz) * AMBIENT;
 	int		i = 0;
 	float on_off = 1;
 	lambert = light(pos, ref, h);
@@ -295,7 +295,7 @@ vec3		calc_light(vec3 pos, Ray ref, Hit h)
 	on_off = on_off * h.mat.reflection.x;
 	reflect += light(pos, ref, h2) * on_off;
 	}
-	return lambert + reflect + ambient;
+	return (lambert + reflect);
 }
 
 

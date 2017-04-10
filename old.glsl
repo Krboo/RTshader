@@ -8,13 +8,23 @@ struct		Ray
 	vec3	pos;
 };
 
+struct Material
+{
+	vec4	texture;
+	vec4	emission; //"a voir plus tard"
+	vec4	transparency;
+	vec4	reflection;
+	vec4	refraction;
+	vec4	bumpmap;
+	vec4	specular;
+};
+
 struct		Hit
 {
 	float	dist;
-	vec3	color;
 	vec3	norm;
 	vec3	pos;
-	vec4	data;
+	Material mat;
 };
 
 struct	Coupe_S
@@ -22,25 +32,6 @@ struct	Coupe_S
 	float	pos;
 	vec3	rot;
 };
-
-struct	Obj
-{
-	vec3	data;	//type, mat, size
-	vec3	pos;
-	vec3	dir;
-	vec3	color;
-};
-
-Obj		create_obj(vec3 data, vec3 pos, vec3 dir, vec3 color)
-{
-	Obj		new;
-
-	new.data = data;
-	new.pos = pos;
-	new.dir = dir;
-	new.color = color;
-	return (new);
-}
 
 /* Découpe de sphère */
 
@@ -75,9 +66,16 @@ bool decoupe(vec3 centre, vec3 inter, Coupe_S c, Coupe_S c2)
 	}
 }*/
 
+/*
+vec4 atlas_fetch(vec4, vec2 obj_uv) {
+    vec2 uv = //ODO
+    return texture(altlas_sampler, uv);
+}
+*/
+
 /* Intersection rayon / plan limité (obsolete on le fera en mesh) */
 
-void plane (vec3 norm, vec3 pos, vec3 rot, vec3 color, vec4 data, Ray r, inout Hit h) {
+void plane (vec3 norm, vec3 pos, vec3 rot, float data, Material mat, Ray r, inout Hit h) {
 	float t = (dot(norm,pos) - (dot (norm, r.pos))) / dot (norm, r.dir);
 	Hit tmp = h;
 
@@ -87,24 +85,23 @@ void plane (vec3 norm, vec3 pos, vec3 rot, vec3 color, vec4 data, Ray r, inout H
 	if (t < h.dist) {
 		h.dist = t;
 		h.pos = r.pos + r.dir * h.dist;
-		h.color = color;
 		h.norm = (faceforward (norm, norm, r.dir));
-    h.data = data;
+    h.mat = mat;
   }
-	if (data.x == 0)
+	if (data == 0)
 		return;
-	else if(h.pos.x > pos.x + data.x/2 || h.pos.x < pos.x - data.x/2  || h.pos.y > pos.y + data.x/2 || h.pos.y < pos.y - data.x/2 || h.pos.z > pos.z + data.x/2 || h.pos.z < pos.z - data.x/2)
+	else if(h.pos.x > pos.x + data/2 || h.pos.x < pos.x - data/2  || h.pos.y > pos.y + data/2 || h.pos.y < pos.y - data/2 || h.pos.z > pos.z + data/2 || h.pos.z < pos.z - data/2)
 		h = tmp;
 }
 
 /* Intersection rayon / sphère */
 
-void sphere (vec3 pos, vec3 color, vec4 data, Ray r, inout Hit h) {
+void sphere (vec3 pos, float data, Material mat, Ray r, inout Hit h) {
 	vec3 d = r.pos - pos;
 
 	float a = dot (r.dir, r.dir);
 	float b = dot (r.dir, d);
-	float c = dot (d, d) - data.x * data.x;
+	float c = dot (d, d) - data * data;
 
 	float g = b*b - a*c;
 
@@ -112,13 +109,13 @@ void sphere (vec3 pos, vec3 color, vec4 data, Ray r, inout Hit h) {
 		return;
 
 	float t = (-sqrt (g) - b) / a;
-	Coupe_S coupe;
-	coupe.pos = 0.5;
-	coupe.rot = vec3(0,1,0);
+	//Coupe_S coupe;
+	//coupe.pos = 0.5;
+	//coupe.rot = vec3(0,1,0);
 
-	Coupe_S coupe2;
-	coupe2.pos = 1.2;
-	coupe2.rot = vec3(0,0,1);
+	//Coupe_S coupe2;
+	//coupe2.pos = 1.2;
+	//coupe2.rot = vec3(0,0,1);
 
 	if (t < 0)//|| decoupe(pos, h.pos, coupe, coupe2))
 		return;
@@ -126,22 +123,21 @@ void sphere (vec3 pos, vec3 color, vec4 data, Ray r, inout Hit h) {
 	if (t < h.dist) {
 		h.dist = t + EPSI;
 		h.pos = r.pos + r.dir * h.dist;
-		h.color = color;
 		h.norm = (h.pos - pos);
-		h.data = data;
+		h.mat = mat;
 	}
 	return;
 }
 
 /* intersection rayon / cylindre */
 
-void cyl (vec3 v, vec3 dir, vec3 color, vec4 data, Ray r, inout Hit h) {
+void cyl (vec3 v, vec3 dir, float data, Material mat, Ray r, inout Hit h) {
 	vec3 d = r.pos - v;
 
 	dir = normalize(dir);
 	float a = dot(r.dir,r.dir) - pow(dot(r.dir, dir), 2);
 	float b = 2 * (dot(r.dir, d) - dot(r.dir, dir) * dot(d, dir));
-	float c = dot(d, d) - pow(dot(d, dir), 2) - data.x * data.x;
+	float c = dot(d, d) - pow(dot(d, dir), 2) - data * data;
 	float g = b*b - 4*a*c;
 
 	if (g < 0)
@@ -158,9 +154,8 @@ void cyl (vec3 v, vec3 dir, vec3 color, vec4 data, Ray r, inout Hit h) {
 		h.pos = r.pos + r.dir * h.dist;
 		vec3 temp = dir * (dot(r.dir, dir) * h.dist + dot(r.pos - v, dir));
 		vec3 tmp = h.pos - v;
-		h.color = color;
 		h.norm = tmp - temp;
-		h.data = data;
+		h.mat = mat;
 	}
 	/*else if (t2 >= 0 && t2 < h.dist){
 	  h.dist = t2;
@@ -173,13 +168,14 @@ void cyl (vec3 v, vec3 dir, vec3 color, vec4 data, Ray r, inout Hit h) {
 }
 
 /* Fonction du calcul de l'intersection entre un rayon et un cone */
-void cone(vec3 v, vec3 dir,vec3 color,vec4 data, Ray r, inout Hit h) {
+void cone(vec3 v, vec3 dir, float data, Material mat, Ray r, inout Hit h)
+{
 	vec3 d = r.pos - v;
 
 	dir = normalize(dir);
-	float a = dot(r.dir, r.dir) - (1 + pow(tan(data.x * M_PI / 180), 2)) * pow(dot(r.dir, dir), 2);
-	float b = 2 * (dot(r.dir, d) - (1 + pow(tan(data.x * M_PI / 180), 2)) * dot(r.dir, dir) * dot(d , dir));
-	float c = dot(d, d) - (1 + pow(tan(data.x * M_PI / 180), 2)) * pow(dot(d, dir), 2);
+	float a = dot(r.dir, r.dir) - (1 + pow(tan(data * M_PI / 180), 2)) * pow(dot(r.dir, dir), 2);
+	float b = 2 * (dot(r.dir, d) - (1 + pow(tan(data * M_PI / 180), 2)) * dot(r.dir, dir) * dot(d , dir));
+	float c = dot(d, d) - (1 + pow(tan(data * M_PI / 180), 2)) * pow(dot(d, dir), 2);
 
 	float g = b*b - 4*a*c;
 	if (g <= 0)
@@ -191,11 +187,10 @@ void cone(vec3 v, vec3 dir,vec3 color,vec4 data, Ray r, inout Hit h) {
 	if (t1 < h.dist){
 		h.dist = t1 ;
 		h.pos = r.pos + r.dir * h.dist;
-		vec3 temp = (dir * (dot(r.dir, dir) * h.dist + dot(r.pos - v, dir))) * (1 + pow(tan(data.x * M_PI / 180), 2));
+		vec3 temp = (dir * (dot(r.dir, dir) * h.dist + dot(r.pos - v, dir))) * (1 + pow(tan(data * M_PI / 180), 2));
 		vec3 tmp = h.pos - v;
-		h.color = color;
 		h.norm = tmp - temp;
-		h.data = data;
+		h.mat = mat;
 	}
 	/*else if (t2 > 0){
 	  h.dist = t2;
@@ -208,34 +203,35 @@ void cone(vec3 v, vec3 dir,vec3 color,vec4 data, Ray r, inout Hit h) {
 }
 
 /* Fonction du calcul de l'intersection entre un rayon et un cube (manque la rotation) */
-void cube(vec3 pos, vec3 rot, vec3 color, vec4 data, Ray r, inout Hit hit)
+void cube(vec3 pos, vec3 rot, float data, Material mat, Ray r, inout Hit hit)
 {
 	r.dir -= r.pos;
 	r.pos += rot;
 	r.dir += r.pos;
-	plane(vec3(0, 0, 1),vec3(pos.x,pos.y,pos.z - data.x/2),rot,color, data, r, hit);
-	plane(vec3(0, 0, 1),vec3(pos.x,pos.y,pos.z + data.x/2),rot,color,data, r, hit);
-	plane(vec3(0, 1, 0),vec3(pos.x,pos.y - data.x/2,pos.z),rot,color,data, r, hit);
-	plane(vec3(0, 1, 0),vec3(pos.x,pos.y + data.x/2,pos.z),rot,color,data, r, hit);
-	plane(vec3(1, 0, 0),vec3(pos.x - data.x/2,pos.y,pos.z),rot,color,data, r, hit);
-	plane(vec3(1, 0, 0),vec3(pos.x + data.x/2,pos.y,pos.z),rot,color,data, r, hit);
+	plane(vec3(0, 0, 1),vec3(pos.x,pos.y,pos.z - data/2),rot, data, mat, r, hit);
+	plane(vec3(0, 0, 1),vec3(pos.x,pos.y,pos.z + data/2),rot, data, mat, r, hit);
+	plane(vec3(0, 1, 0),vec3(pos.x,pos.y - data/2,pos.z),rot, data, mat, r, hit);
+	plane(vec3(0, 1, 0),vec3(pos.x,pos.y + data/2,pos.z),rot, data, mat, r, hit);
+	plane(vec3(1, 0, 0),vec3(pos.x - data/2,pos.y,pos.z),rot, data, mat, r, hit);
+	plane(vec3(1, 0, 0),vec3(pos.x + data/2,pos.y,pos.z),rot, data, mat, r, hit);
 }
+
 
 Hit		scene(Ray r)
 {
 	int i = -1;
 	Hit		hit;
 	hit.dist = 1e20;
-	hit.color = vec3(0,0,0);
-	hit.data = vec4(0,0,0,0); //size + reflexion + ? + ?
-	//sphere(vec3(15, 5, -10), vec3(0,0,0), vec4(5,1,1,0), r, hit );
-	sphere(vec3(8, 9, -30), vec3(0,0,1), vec4(5,1,1,0), r, hit);
+	hit.mat.texture = vec4(0,0,0,0);
+  //size + reflexion + ? + ?
+	sphere(vec3(15, 5, -10), 5, Material(vec4(1,0,1,1), vec4(0,0,0,0), vec4(0,0,0,0), vec4(1,1,1,1), vec4(0,0,0,0), vec4(0,0,0,0), vec4(0,0,0,0)), r, hit );
+	//sphere(vec3(8, 9, -30), vec3(0,0,1), vec4(5,1,1,0), r, hit);
 	//sphere(vec3(15, 15, -45), vec3(0.8,0.5,0), vec4(5,1,1,0), r, hit);
 	//sphere(vec3(20, 30, -50), vec3(0.75,0.5,0.55), vec4(4,1,1,0), r, hit);
-	cyl(vec3(0, 0, 0), vec3(0,0,1), vec3(0,0,1), vec4(1,0,1,0), r, hit);
-	cyl(vec3(0, 0, 0), vec3(1,0,0), vec3(1,0,0), vec4(1,0,1,0), r, hit);
-	cyl(vec3(0, 0, 0), vec3(0,1,0), vec3(0,1,0), vec4(1,0,1,0), r, hit);
-	//cone(vec3(75, 10, 200), vec3(1,1,0), vec3(0.5,0.5,0.8), vec4(10,1,0,0), r, hit);
+	//cyl(vec3(0, 0, 0), vec3(0,0,1), vec3(0,0,1), vec4(60,0,1,0), r, hit);
+	//cyl(vec3(0, 0, 0), vec3(1,0,0), vec3(1,0,0), vec4(1,0,1,0), r, hit);
+	//cyl(vec3(0, 0, 0), vec3(0,1,0), vec3(0,1,0), vec4(1,0,1,0), r, hit);
+	//cone(vec3(75, 10, 200), vec3(1,1,0), vec3(1,1,0), vec4(30,0,0,0), r, hit);
 	//plane(vec3(1,1,0),vec3(1,1,-6),vec3(0,0,0),vec3(0,0,1), vec4(0,0,0,0), r, hit);
 	//plane(vec3(0,1,0),vec3(50,-280,-30),vec3(0,0,0),vec3(1,1,1),vec4(0,0,0,0), r, hit);
 	//plane(vec3(1,1,1),vec3(50,-280,-30),vec3(0,0,0),vec3(0.3,0.5,0.6),vec4(0,0,0,0), r, hit);
@@ -276,7 +272,7 @@ vec3		light(vec3 pos, Ray r, Hit h)
 		return (color);
 	if (shadows(h.pos, d, h))
 		return (color);
-	color += (limit(dot(h.norm, d), 0.0, 1.0)) * h.color;
+	color += (limit(dot(h.norm, d), 0.0, 1.0)) * vec3(h.mat.texture.xyz);
   return (color);
 }
 
@@ -286,7 +282,7 @@ vec3		calc_light(vec3 pos, Ray ref, Hit h)
 	Hit	h2 = h;
 	vec3 lambert;
 	vec3 reflect = vec3(0,0,0);
-	vec3 ambient = h.color * AMBIENT;
+	vec3 ambient = vec3(h.mat.texture.x, h.mat.texture.y, h.mat.texture.z) * AMBIENT;
 	int		i = 0;
 	float on_off = 1;
 	lambert = light(pos, ref, h);
@@ -296,7 +292,7 @@ vec3		calc_light(vec3 pos, Ray ref, Hit h)
 	ref.dir = h.norm;
 	ref.pos = h.pos;
 	h2 = scene(ref);
-	on_off = on_off * h.data.y;
+	on_off = on_off * h.mat.reflection.x;
 	reflect += light(pos, ref, h2) * on_off;
 	}
 	return lambert + reflect + ambient;
@@ -323,7 +319,7 @@ vec3	raytrace(vec3 ro, vec3 rd)
 void		mainImage(vec2 coord)
 {
 	vec2	uv = (coord / iResolution) * 2 - 1;
-	vec3	cameraPos = iMoveAmount.xyz + vec3(0, 5, -17);
+	vec3	cameraPos = iMoveAmount.xyz + vec3(61, 61, -61);
 	vec3	cameraDir = vec3(0,0,0);
 	vec3	col;
 

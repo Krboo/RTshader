@@ -195,17 +195,17 @@ Hit		scene(Ray r)
 	Hit		hit;
 	hit.dist = 1e20;
 	hit.mat.texture = vec4(0,0,0,0);
-	sphere(vec3(15, 15, -10), 5, Material(vec4(1,0,0,0), vec4(0,0,0,0), vec4(0,0,0,0), vec4(1,1,1,1), vec4(0,0,0,0), vec4(0,0,0,0), vec4(0,0,0,0)), r, hit );
-	sphere(vec3(8, 19, -30), 5, Material(vec4(0,1,0,0), vec4(0,0,0,0), vec4(0,0,0,0), vec4(1,1,1,1), vec4(0,0,0,0), vec4(0,0,0,0), vec4(0,0,0,0)), r, hit );
-	sphere(vec3(15, 15, -45), 5, Material(vec4(0,0,1,0), vec4(0,0,0,0), vec4(0,0,0,0), vec4(1,1,1,1), vec4(0,0,0,0), vec4(0,0,0,0), vec4(0,0,0,0)), r, hit );
-	sphere(vec3(20, 30, -50), 5, Material(vec4(0.8,0.7,0.7,0), vec4(0,0,0,0), vec4(0,0,0,0), vec4(1,1,1,1), vec4(0,0,0,0), vec4(0,0,0,0), vec4(0,0,0,0)), r, hit );
+	sphere(vec3(15, 15, -10), 5, Material(vec4(1,0,0,0), vec4(0,0,0,0), vec4(0.5,0,0,0), vec4(0,1,1,1), vec4(0,0,0,0), vec4(0,0,0,0), vec4(0,0,0,0)), r, hit );
+	sphere(vec3(8, 19, -30), 5, Material(vec4(0,1,0,0), vec4(0,0,0,0), vec4(0,0,0,0), vec4(0,1,1,1), vec4(0,0,0,0), vec4(0,0,0,0), vec4(0,0,0,0)), r, hit );
+	sphere(vec3(15, 15, -45), 5, Material(vec4(0,0,1,0), vec4(0,0,0,0), vec4(0,0,0,0), vec4(0,1,1,1), vec4(0,0,0,0), vec4(0,0,0,0), vec4(0,0,0,0)), r, hit );
+	sphere(vec3(20, 30, -50), 5, Material(vec4(0.8,0.7,0.7,0), vec4(0,0,0,0), vec4(0,0.5,0,0), vec4(0,1,1,1), vec4(0,0,0,0), vec4(0,0,0,0), vec4(0,0,0,0)), r, hit );
 //	cyl(vec3(0, 0, 0), vec3(0,0,1), 20, Material(vec4(0.8,0.7,0.7,1), vec4(0,0,0,0), vec4(0,0,0,0), vec4(1,1,1,1), vec4(0,0,0,0), vec4(0,0,0,0), vec4(0,0,0,0)), r, hit );
 //	cyl(vec3(0, 0, 0), vec3(1,0,0), 4, Material(vec4(0.4,0.5,0.4,1), vec4(0,0,0,0), vec4(0,0,0,0), vec4(1,1,1,1), vec4(0,0,0,0), vec4(0,0,0,0), vec4(0,0,0,0)), r, hit );
 //	cyl(vec3(0, 0, 0), vec3(0,1,0), 2, Material(vec4(0.6,0.8,0.7,1), vec4(0,0,0,0), vec4(0,0,0,0), vec4(1,1,1,1), vec4(0,0,0,0), vec4(0,0,0,0), vec4(0,0,0,0)), r, hit );
 //	cone(vec3(75, 35, 90), vec3(1,1,0), 15, Material(vec4(0.5,0.7,0.9,1), vec4(0,0,0,0), vec4(0,0,0,0), vec4(1,1,1,1), vec4(0,0,0,0), vec4(0,0,0,0), vec4(0,0,0,0)), r, hit );
 	//plane(vec3(0,0,0),vec3(1,1,-6), vec3(0,0,0), 0.0, Material(vec4(0.5,0.7,0.8,0), vec4(0,0,0,0), vec4(0,0,0,0), vec4(1,1,1,1), vec4(0,0,0,0), vec4(0,0,0,0), vec4(0,0,0,0)), r, hit);
 	plane(vec3(0,1,0),vec3(0,0,0), vec3(0,0,0), 0.0, Material(vec4(0.9,0.7,0.8,0), vec4(0,0,0,0), vec4(0,0,0,0), vec4(0,1,1,1), vec4(0,0,0,0), vec4(0,0,0,0), vec4(0,0,0,0)), r, hit);
-	plane(vec3(1,0,1),vec3(1,0,100), vec3(0,0,0), 0.0, Material(vec4(0.2,0.8,0.75,0), vec4(0,0,0,0), vec4(0,0,0,0), vec4(1,1,1,1), vec4(0,0,0,0), vec4(0,0,0,0), vec4(0,0,0,0)), r, hit);
+	plane(vec3(1,0,1),vec3(1,0,100), vec3(0,0,0), 0.0, Material(vec4(0.2,0.8,0.75,0), vec4(0,0,0,0), vec4(0,0,0,0), vec4(0 ,1,1,1), vec4(0,0,0,0), vec4(0,0,0,0), vec4(0,0,0,0)), r, hit);
 //	cube(vec3(5, 15, -25), vec3(45,45,0), 4.,Material(vec4(0.8,0.8,0.5,1), vec4(0,0,0,0), vec4(0,0,0,0), vec4(0,1,1,1), vec4(0,0,0,0), vec4(0,0,0,0), vec4(0,0,0,0)), r, hit);
 //	sphere(vec3(15, 15, -25), 0.5, Material(vec4(1,1,1,1), vec4(0,0,0,0), vec4(0,0,0,0), vec4(0,0,1,1), vec4(0,0,0,0), vec4(0,0,0,0), vec4(0,0,0,0)), r, hit );
 	return hit;
@@ -248,7 +248,7 @@ vec3		light(vec3 pos, Ray r, Hit h)
 }
 
 /* Définition de la light */
-vec3		calc_light(vec3 pos, Ray ref, Hit h)
+vec3		calc_light(vec3 pos, Ray r, Hit h)
 {
 	Hit	h2 = h;
 	vec3 lambert;
@@ -256,15 +256,24 @@ vec3		calc_light(vec3 pos, Ray ref, Hit h)
 	vec3 ambient = vec3(h.mat.texture.xyz) * AMBIENT;
 	int		i = 0;
 	float on_off = 1;
-	lambert = light(pos, ref, h);
-	while (++i < 5)
+	lambert = light(pos, r, h);
+	/*while (++i < 5)
 	{
 	h = h2;
-	ref.dir = h.norm;
+	Ray ref.dir = h.norm;
 	ref.pos = h.pos;
 	h2 = scene(ref);
 	on_off = on_off * h.mat.reflection.x;
 	reflect += light(pos, ref, h2) * on_off;
+	}*/
+	while (h.mat.transparency.x > 0)
+	{
+		h = h2;
+		Ray trans;
+		trans.pos = h.pos;
+		trans.dir = r.dir;
+		h2 = scene(trans);
+		lambert = light(pos, trans, h2) + lambert * abs(h.mat.transparency.x - 1);
 	}
 	return (lambert + reflect);
 }

@@ -70,7 +70,7 @@ void plane (vec3 norm, vec3 pos, float data, Material mat, Ray r, inout Hit h) {
 		h.dist = t;
 		h.pos = r.pos + r.dir * h.dist;
 		h.norm = faceforward(norm, norm, r.dir);
-    h.mat = mat;
+    	h.mat = mat;
 		h.rot = vec3(0,0,0);
   }
 	if (data == 0)
@@ -185,13 +185,14 @@ void cube(vec3 pos, vec3 rot, float data, Material mat, Ray r, inout Hit hit)
 {
 	Hit h;
 	h = hit;
-	r.pos = rotate(r.pos + pos, rot, 1);
+	r.pos -= pos;
+	r.pos = rotate(r.pos, rot, 1);
 	r.dir = rotate(r.dir, rot, 1);
 	//plane(vec3(0, 0, 1),vec3(pos.x,pos.y,pos.z - data/2), data, mat, r, hit);
 	//plane(vec3(0, 0, 1),vec3(pos.x,pos.y,pos.z + data/2), data, mat, r, hit);
 	//plane(vec3(0, 1, 0),vec3(pos.x,pos.y - data/2,pos.z), data, mat, r, hit);
 	//plane(vec3(0, 1, 0),vec3(pos.x,pos.y + data/2,pos.z), data, mat, r, hit);
-	//plane(vec3(1, 0, 0),vec3(pos.x - data/2,pos.y,pos.z), data, mat, r, hit);
+	//plane(vec3(1, 0,0),vec3(pos.x - data/2,pos.y,pos.z), data, mat, r, hit);
 	//plane(vec3(1, 0, 0),vec3(pos.x + data/2,pos.y,pos.z), data, mat, r, hit);
 	plane(vec3(0, 0, 1),vec3(0,0,data/2), data, mat, r, hit);
 	plane(vec3(0, 0, 1),vec3(0,0,-data/2), data, mat, r, hit);
@@ -200,7 +201,8 @@ void cube(vec3 pos, vec3 rot, float data, Material mat, Ray r, inout Hit hit)
 	plane(vec3(1, 0, 0),vec3(data/2,0,0), data, mat, r, hit);
 	plane(vec3(1, 0, 0),vec3(-data/2,0,0), data, mat, r, hit);
 	if (h.dist != hit.dist){
-		hit.pos += 10;
+		hit.pos = rotate(hit.pos, rot, 0);
+		hit.pos += pos;
 		hit.norm = rotate(hit.norm, rot, 0);
 	}
 }
@@ -220,14 +222,14 @@ Hit		scene(Ray r)
 	cyl(vec3(0, 0, 0), vec3(1,0,0),0.2, Material(vec4(1,0,0,1), vec4(0,0,0,0), vec4(0,0,0,0), vec4(0,1,1,1), vec4(0,0,0,0), vec4(0,0,0,0), vec4(0,0,0,0)), r, hit);
 	cyl(vec3(0, 0, 0), vec3(0,1,0),0.2, Material(vec4(0,1,0,1), vec4(0,0,0,0), vec4(0,0,0,0), vec4(0,1,1,1), vec4(0,0,0,0), vec4(0,0,0,0), vec4(0,0,0,0)), r, hit);
 	//cone(vec3(75, 10, 200), vec3(1,1,0), vec3(1,1,0), vec4(30,0,0,0), r, hit);
-	//plane(vec3(0,0,1),vec3(0,0,6), 0.0, Material(vec4(0.5,0.7,0.8,0), vec4(0,0,0,0), vec4(0,0,0,0), vec4(1,1,1,1), vec4(0,0,0,0), vec4(0,0,0,0), vec4(0,0,0,0)), r, hit);
+	plane(vec3(0,0,1),vec3(0,0,6), 0.0, Material(vec4(0.5,0.7,0.8,0), vec4(0,0,0,0), vec4(0,0,0,0), vec4(1,1,1,1), vec4(0,0,0,0), vec4(0,0,0,0), vec4(0,0,0,0)), r, hit);
 	//plane(vec3(0,1,0),vec3(50,-280,-30),vec3(0,0,0),vec3(1,1,1),vec4(0,0,0,0), r, hit);
 	//plane(vec3(1,1,1),vec3(50,-280,-30),vec3(0,0,0),vec3(0.3,0.5,0.6),vec4(0,0,0,0), r, hit);
 	//cube(vec3(0, 0, 0), vec3(iGlobalTime * 20,iGlobalTime * 15,iGlobalTime * 10), 4.,Material(vec4(1,1,0,1), vec4(0,0,0,0), vec4(0,0,0,0), vec4(1,1,1,1), vec4(0,0,0,0), vec4(0,0,0,0), vec4(0,0,0,0)), r, hit);
-	//cube(vec3(0, 0, 0), vec3(0,0,0), 4.,Material(vec4(1,0,1,1), vec4(0,0,0,0), vec4(0,0,0,0), vec4(1,1,1,1), vec4(0,0,0,0), vec4(0,0,0,0), vec4(0,0,0,0)), r, hit);
+//	cube(vec3(0, 0, 0), vec3(0,0,0), 4.,Material(vec4(1,0,1,1), vec4(0,0,0,0), vec4(0,0,0,0), vec4(1,1,1,1), vec4(0,0,0,0), vec4(0,0,0,0), vec4(0,0,0,0)), r, hit);
 	//cube(vec3(10, 0, 0), vec3(45,0,0), 4.,Material(vec4(1,0,0,1), vec4(0,0,0,0), vec4(0,0,0,0), vec4(1,1,1,1), vec4(0,0,0,0), vec4(0,0,0,0), vec4(0,0,0,0)), r, hit);
-	cube(vec3(10, 10, 10), vec3(iGlobalTime * 50,iGlobalTime * 10,iGlobalTime), 4.,Material(vec4(0,0,1,0), vec4(0,0,0,0), vec4(0,0,0,0), vec4(0,0,0,0), vec4(0,0,0,0), vec4(0,0,0,0), vec4(0,0,0,0)), r, hit);
-	cube(vec3(10, 0, 0), vec3(90,90,90), 4.,Material(vec4(0,1,0,1), vec4(0,0,0,0), vec4(0,0,0,0), vec4(1,1,1,1), vec4(0,0,0,0), vec4(0,0,0,0), vec4(0,0,0,0)), r, hit);
+	//cube(vec3(10, 10, 10), vec3(iGlobalTime * 50,iGlobalTime * 10,iGlobalTime), 4.,Material(vec4(0,0,1,0), vec4(0,0,0,0), vec4(0,0,0,0), vec4(0,0,0,0), vec4(0,0,0,0), vec4(0,0,0,0), vec4(0,0,0,0), r, hit);
+//	cube(vec3(10, 10, 0), vec3(90,4,45), 4.,Material(vec4(0.2,1,0.2,1), vec4(0,0,0,0), vec4(0,0,0,0), vec4(1,1,1,1), vec4(0,0,0,0), vec4(0,0,0,0), vec4(0,0,0,0)), r, hit);
 
 	//sphere(vec3(45, 20, 25),vec3(255,255,255),vec4(0.5, 0.6, 0.5, 0.2), r, hit);
 	return hit;
@@ -244,7 +246,7 @@ bool			shadows(vec3 pos, vec3 d, Hit h)
 	Hit		shad;
 
 	shadow.dir = d;
-	shadow.pos = h.pos + h.norm * EPSI;
+	shadow.pos = pos;
 	shad = scene(shadow);
 	if (shad.dist < h.dist)
 		return (true);
@@ -263,8 +265,8 @@ vec3		light(vec3 pos, Ray r, Hit h)
 	h.dist = sqrt(v3.x + v3.y + v3.z);
 	if (h.dist > 1e20)
 		return (color);
-	//if (shadows(h.pos, d, h))
-	//	return (color);
+	if (shadows(h.pos, d, h))
+		return (color);
 	color += (limit(dot(h.norm, d), 0.0, 1.0)) * vec3(h.mat.texture.xyz);
   return (color);
 }

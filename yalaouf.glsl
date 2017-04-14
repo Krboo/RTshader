@@ -78,7 +78,7 @@ void	iSphere(Sphere s, Ray r, inout Hit h) //Intersection Sphere - Rayon
 		h.color = s.color;
 		h.norm = (h.pos - s.pos);
 		vec3	n = normalize(h.pos - s.pos);
-		h.uv = vec2(-(0.5 + (atan(n.z, n.x)) / (2 * M_PI)),
+		h.uv = vec2(-(0.5 + (atan(n.z, n.x)) / (M_PI)),
 					(0.5 - asin(n.y)) / M_PI);
 	}
 }
@@ -123,7 +123,7 @@ void	iCylinder(Cylinder cyl, Ray r, inout Hit h)
 		h.color = cyl.color;
 		h.norm = tmp - temp;
 		vec3	d = h.pos - (cyl.pos * r.dir);
-		h.uv = vec2(0.5 + (atan(d.z, d.x) / (M_PI * 0.25)), (d.y / M_PI) - floor(d.y / M_PI));
+		h.uv = vec2(-(0.5 + (atan(d.z, d.x) / (M_PI * 0.25))), -((d.y / M_PI) - floor(d.y / M_PI)));
 	}
 }
 
@@ -149,8 +149,8 @@ void	iCone(Cone co, Ray r, inout Hit h)
 		vec3	tmp = h.pos - co.pos;
 		h.color = co.color;
 		h.norm = tmp - temp;
-		vec3	d = h.pos - co.pos;
-		h.uv = vec2(0.5 + (atan(h.norm.z, h.norm.x) / (M_PI * 2)), (h.norm.y / M_PI) - floor(h.norm.y / M_PI));
+		vec3	d = normalize(h.pos - co.pos);
+		h.uv = vec2(-(0.5 + (atan(h.norm.z, h.norm.x) / (M_PI * 2))), (h.norm.y /  M_PI) - floor(h.norm.y / M_PI));
 	}
 }
 

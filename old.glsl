@@ -109,10 +109,11 @@ void sphere (vec3 pos, float data, Material mat, Ray r, inout Hit h) {
 
 /* intersection rayon / cylindre */
 
-void cyl (vec3 v, vec3 dir, float data, Material mat, Ray r, inout Hit h) {
-	vec3 d = r.pos - v;
-
-	dir = normalize(dir);
+void cyl (vec3 pos, vec3 rot, float data, Material mat, Ray r, inout Hit h) {
+	vec3 d = r.pos - pos;
+	vec3 dir = vec3(0,0,1);
+	dir = rotate(dir, rot, 1);
+	//dir = normalize(dir);
 	float a = dot(r.dir,r.dir) - pow(dot(r.dir, dir), 2);
 	float b = 2 * (dot(r.dir, d) - dot(r.dir, dir) * dot(d, dir));
 	float c = dot(d, d) - pow(dot(d, dir), 2) - data * data;
@@ -130,19 +131,11 @@ void cyl (vec3 v, vec3 dir, float data, Material mat, Ray r, inout Hit h) {
 	if (t1 < h.dist){
 		h.dist = t1 - EPSI;
 		h.pos = r.pos + r.dir * h.dist;
-		vec3 temp = dir * (dot(r.dir, dir) * h.dist + dot(r.pos - v, dir));
-		vec3 tmp = h.pos - v;
+		vec3 temp = dir * (dot(r.dir, dir) * h.dist + dot(r.pos - pos, dir));
+		vec3 tmp = h.pos - pos;
 		h.norm = tmp - temp;
 		h.mat = mat;
 	}
-	/*else if (t2 >= 0 && t2 < h.dist){
-	  h.dist = t2;
-	  h.pos = r.pos + r.dir * t2;
-	  vec3 temp = rot * (dot(r.dir, rot) * h.dist + dot(r.pos - v, rot));
-	  vec3 tmp = h.pos - v;
-	  h.color = color;
-	  h.norm = temp - tmp;
-	  }*/
 }
 
 /* Fonction du calcul de l'intersection entre un rayon et un cone */
@@ -188,12 +181,6 @@ void cube(vec3 pos, vec3 rot, float data, Material mat, Ray r, inout Hit hit)
 	r.pos -= pos;
 	r.pos = rotate(r.pos, rot, 1);
 	r.dir = rotate(r.dir, rot, 1);
-	//plane(vec3(0, 0, 1),vec3(pos.x,pos.y,pos.z - data/2), data, mat, r, hit);
-	//plane(vec3(0, 0, 1),vec3(pos.x,pos.y,pos.z + data/2), data, mat, r, hit);
-	//plane(vec3(0, 1, 0),vec3(pos.x,pos.y - data/2,pos.z), data, mat, r, hit);
-	//plane(vec3(0, 1, 0),vec3(pos.x,pos.y + data/2,pos.z), data, mat, r, hit);
-	//plane(vec3(1, 0,0),vec3(pos.x - data/2,pos.y,pos.z), data, mat, r, hit);
-	//plane(vec3(1, 0, 0),vec3(pos.x + data/2,pos.y,pos.z), data, mat, r, hit);
 	plane(vec3(0, 0, 1),vec3(0,0,data/2), data, mat, r, hit);
 	plane(vec3(0, 0, 1),vec3(0,0,-data/2), data, mat, r, hit);
 	plane(vec3(0, 1, 0),vec3(0,data/2,0), data, mat, r, hit);
@@ -214,24 +201,23 @@ Hit		scene(Ray r)
 	hit.dist = 1e20;
 	hit.mat.texture = vec4(0,0,0,0);
 	sphere(vec3(15, 15, -24), 0.2, Material(vec4(1,1,1,1), vec4(0,0,0,0), vec4(0,0,0,0), vec4(1,1,1,1), vec4(0,0,0,0), vec4(0,0,0,0), vec4(0,0,0,0)), r, hit );
-	sphere(vec3(0, 0, -15), 5, Material(vec4(0.8,0.8,0.5,1), vec4(0,0,0,0), vec4(0,0,0,0), vec4(0.8,0.8,0.8,1), vec4(0,0,0,0), vec4(0,0,0,0), vec4(0,0,0,0)), r, hit );
-	//sphere(vec3(8, 9, -30), vec3(0,0,1), vec4(5,1,1,0), r, hit);
-	//sphere(vec3(15, 15, -45), vec3(0.8,0.5,0), vec4(5,1,1,0), r, hit);
-	//sphere(vec3(20, 30, -50), vec3(0.75,0.5,0.55), vec4(4,1,1,0), r, hit);
-	cyl(vec3(0, 0, 0), vec3(0,0,1),0.2, Material(vec4(0,0,1,1), vec4(0,0,0,0), vec4(0,0,0,0), vec4(0,1,1,1), vec4(0,0,0,0), vec4(0,0,0,0), vec4(0,0,0,0)), r, hit);
-	cyl(vec3(0, 0, 0), vec3(1,0,0),0.2, Material(vec4(1,0,0,1), vec4(0,0,0,0), vec4(0,0,0,0), vec4(0,1,1,1), vec4(0,0,0,0), vec4(0,0,0,0), vec4(0,0,0,0)), r, hit);
-	cyl(vec3(0, 0, 0), vec3(0,1,0),0.2, Material(vec4(0,1,0,1), vec4(0,0,0,0), vec4(0,0,0,0), vec4(0,1,1,1), vec4(0,0,0,0), vec4(0,0,0,0), vec4(0,0,0,0)), r, hit);
+	sphere(vec3(0, 0, -15), 5, Material(vec4(0.8,0.8,0.5,1), vec4(0,0,0,0), vec4(0,0,0,0), vec4(1,0,0,1), vec4(0,0,0,0), vec4(0,0,0,0), vec4(0,0,0,0)), r, hit );
+	sphere(vec3(8, 9, -30), 5, Material(vec4(0,0,1,1), vec4(0,0,0,0), vec4(0,0,0,0), vec4(0,1,0,1), vec4(0,0,0,0), vec4(0,0,0,0), vec4(0,0,0,0)), r, hit );
+	sphere(vec3(15, 15, -45), 5, Material(vec4(0.8,0.5,0.0,1), vec4(0,0,0,0), vec4(0,0,0,0), vec4(1,1,1,1), vec4(0,0,0,0), vec4(0,0,0,0), vec4(0,0,0,0)), r, hit );
+	sphere(vec3(20, 30, -50), 5, Material(vec4(0.75,0.5,0.55,1), vec4(0,0,0,0), vec4(0,0,0,0), vec4(0,1,1,1), vec4(0,0,0,0), vec4(0,0,0,0), vec4(0,0,0,0)), r, hit );
+	cyl(vec3(0, 0, 0), vec3(0,0,90),0.2, Material(vec4(0,0,1,1), vec4(0,0,0,0), vec4(0,0,0,0), vec4(0,1,1,1), vec4(0,0,0,0), vec4(0,0,0,0), vec4(0,0,0,0)), r, hit);
+	cyl(vec3(0, 0, 0), vec3(0,90,0),0.2, Material(vec4(1,0,0,1), vec4(0,0,0,0), vec4(0,0,0,0), vec4(0,1,1,1), vec4(0,0,0,0), vec4(0,0,0,0), vec4(0,0,0,0)), r, hit);
+	cyl(vec3(0, 0, 0), vec3(90,0,0),0.2, Material(vec4(0,1,0,1), vec4(0,0,0,0), vec4(0,0,0,0), vec4(0,1,1,1), vec4(0,0,0,0), vec4(0,0,0,0), vec4(0,0,0,0)), r, hit);
 	//cone(vec3(75, 10, 200), vec3(1,1,0), vec3(1,1,0), vec4(30,0,0,0), r, hit);
-	plane(vec3(0,0,1),vec3(0,0,6), 0.0, Material(vec4(0.5,0.7,0.8,0), vec4(0,0,0,0), vec4(0,0,0,0), vec4(1,1,1,1), vec4(0,0,0,0), vec4(0,0,0,0), vec4(0,0,0,0)), r, hit);
+	plane(vec3(0,0,1),vec3(0,0,45), 0.0, Material(vec4(0.5,0.7,0.8,0), vec4(0,0,0,0), vec4(0,0,0,0), vec4(1,1,1,1), vec4(0,0,0,0), vec4(0,0,0,0), vec4(0,0,0,0)), r, hit);
 	//plane(vec3(0,1,0),vec3(50,-280,-30),vec3(0,0,0),vec3(1,1,1),vec4(0,0,0,0), r, hit);
 	//plane(vec3(1,1,1),vec3(50,-280,-30),vec3(0,0,0),vec3(0.3,0.5,0.6),vec4(0,0,0,0), r, hit);
 	cube(vec3(10, 10, 0), vec3(iGlobalTime * 20,iGlobalTime * 15,iGlobalTime * 10), 4.,Material(vec4(1,1,0,1), vec4(0,0,0,0), vec4(0,0,0,0), vec4(0,1,1,1), vec4(0,0,0,0), vec4(0,0,0,0), vec4(0,0,0,0)), r, hit);
+	cube(vec3(15, 15, -15), vec3(iGlobalTime * 30,iGlobalTime * 25,iGlobalTime * 45), 4.,Material(vec4(1,1,0,1), vec4(0,0,0,0), vec4(0,0,0,0), vec4(0,1,1,1), vec4(0,0,0,0), vec4(0,0,0,0), vec4(0,0,0,0)), r, hit);
 	//cube(vec3(0, 0, 0), vec3(0,0,0), 4.,Material(vec4(1,0,1,1), vec4(0,0,0,0), vec4(0,0,0,0), vec4(1,1,1,1), vec4(0,0,0,0), vec4(0,0,0,0), vec4(0,0,0,0)), r, hit);
 	//cube(vec3(10, 0, 0), vec3(45,0,0), 4.,Material(vec4(1,0,0,1), vec4(0,0,0,0), vec4(0,0,0,0), vec4(1,1,1,1), vec4(0,0,0,0), vec4(0,0,0,0), vec4(0,0,0,0)), r, hit);
 	//cube(vec3(10, 10, 10), vec3(iGlobalTime * 50,iGlobalTime * 10,iGlobalTime ), 4,Material(vec4(0,0,1,0), vec4(0,0,0,0), vec4(0,0,0,0), vec4(1,1,1,1), vec4(0,0,0,0), vec4(0,0,0,0), vec4(0,0,0,0), r, hit);
 	//	cube(vec3(10, 10, 0), vec3(45,45,45), 4.,Material(vec4(0.2,1,0.2,1), vec4(0,0,0,0), vec4(0,0,0,0), vec4(1,1,1,1), vec4(0,0,0,0), vec4(0,0,0,0), vec4(0,0,0,0)), r, hit);
-
-	//sphere(vec3(45, 20, 25),vec3(255,255,255),vec4(0.5, 0.6, 0.5, 0.2), r, hit);
 	return hit;
 }
 
@@ -281,7 +267,7 @@ vec3		calc_light(vec3 pos, Ray r, Hit h)
 	int		i = 0;
 	float on_off = 1;
 	vec3 lambert = light(pos, r, h);
-	while (++i < 5)
+	/*while (++i < 5)
 	{
 	h = h2;
 	ref.dir = h.norm;
@@ -289,8 +275,8 @@ vec3		calc_light(vec3 pos, Ray r, Hit h)
 	h2 = scene(ref);
 	on_off = on_off * h.mat.reflection.x;
 	reflect += light(pos, ref, h2) * on_off;
-	}
-	return (lambert + reflect);
+	}*/
+	return (lambert);
 }
 
 

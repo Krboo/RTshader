@@ -11,7 +11,7 @@ struct		Ray
 struct Material
 {
 	vec4	texture;
-	vec4	emission; //"a voir plus tard"
+	vec4	emission;
 	vec4	transparency;
 	vec4	reflection;
 	vec4	refraction;
@@ -58,21 +58,19 @@ void plane (vec3 norm, vec3 pos, float data, Material mat, Ray r, inout Hit h) {
 /* Découpe de sphère */
 void decoupe(vec3 centre, vec3 inter, Coupe c, Coupe c2, Material m, Ray r, inout Hit h, inout bool bo)
 {
-	c2.rot = normalize(c2.rot);
-	c.rot = normalize(c.rot);
-	vec3 pos = centre + c.rot * c.dist;
-	vec3 pos2 = centre + c2.rot * c2.dist;
+	vec3 pos = centre +normalize(c.rot) * c.dist;
+	vec3 pos2 = centre +  normalize(c2.rot) * c2.dist;
 
 	float d = (c.rot.x * pos.x + c.rot.y * pos.y + c.rot.z * pos.z) * -1;
 	float d2 = (c2.rot.x * pos2.x + c2.rot.y * pos2.y + c2.rot.z * pos2.z) * -1;
 	bo = false;
 
 	if (c2.rot.x * inter.x + c2.rot.y * inter.y + c2.rot.z * inter.z + d2 > 0){
-		plane(c2.rot, pos2, 0, m, r, h);
+		// /plane(c2.rot, pos2, 0, m, r, h);
 		bo = true;
 	}
-	if (c.rot.x * inter.x + c.rot.y * inter.y + c.rot.z * inter.z + d >= 0){
-		plane(c.rot, pos, 0, m, r, h);
+	if (c.rot.x * inter.x + c.rot.y * inter.y + c.rot.z * inter.z + d > 0){
+		plane(pos, c.rot, 0, m, r, h);
 		bo = true;
 	}
 	return;
@@ -82,11 +80,11 @@ void sphere (vec3 pos, float data, Material mat, Ray r, inout Hit h) {
 	vec3 d = r.pos - pos;
 
 	Coupe co;
-	co.rot = vec3(0,0,-1);
+	co.rot = vec3(0,-1,-1);
 	co.dist = 4;
 
 	Coupe co2;
-	co2.rot = vec3(0,1,0);
+	co2.rot = vec3(0,0,1);
 	co2.dist = 1;
 
 	float a = dot (r.dir, r.dir);
@@ -99,11 +97,13 @@ void sphere (vec3 pos, float data, Material mat, Ray r, inout Hit h) {
 		return;
 
 	float t = (-sqrt (g) - b) / a;
+	if (t < 0)
+		return;
 	vec3 inter = r.pos + r.dir * t;
-	bool bo;
+	bool bo = false;
 	decoupe(pos, inter, co, co2, mat, r, h, bo);
 
-	if (t < 0 || bo)
+	if (bo)
 		return;
 
 	if (t < h.dist) {
@@ -196,8 +196,8 @@ vec3		light(vec3 pos, Ray r, Hit h)
 	h.dist = sqrt(v3.x + v3.y + v3.z);
 	if (h.dist > 1e20)
 		return (color);
-	if (shadows(h.pos, d, h))
-		return (color);
+	//if (shadows(h.pos, d, h))
+	//	return (color);
 	color += (limit(dot(h.norm, d), 0.0, 1.0)) * vec3(h.mat.texture.xyz);
   return (color);
 }

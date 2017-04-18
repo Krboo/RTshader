@@ -59,30 +59,27 @@ void plane (vec3 norm, vec3 pos, float data, Material mat, Ray r, inout Hit h) {
 }
 
 /* Découpe de sphère */
-bool decoupe(vec3 centre, vec3 inter, Coupe c, Coupe c2, Material m, Ray r,inout Hit h)
+bool decoupe(vec3 centre, vec3 inter, Coupe c, Coupe c2,float data, Material m, Ray r,inout Hit h)
 {
+	Hit tmp;
+	tmp = h;
 	vec3 pos = centre +normalize(c.rot) * c.dist;
 	vec3 pos2 = centre +  normalize(c2.rot) * c2.dist;
 
 	float d = (c.rot.x * pos.x + c.rot.y * pos.y + c.rot.z * pos.z) * -1;
 	float d2 = (c2.rot.x * pos2.x + c2.rot.y * pos2.y + c2.rot.z * pos2.z) * -1;
 
-	if (c2.rot.x * inter.x + c2.rot.y * inter.y + c2.rot.z * inter.z + d2 > 0){
-		plane(c.rot, pos, 24, m, r, h);
-	 	return true;
-	}
 
-	if (c.rot.x * inter.x + c.rot.y * inter.y + c.rot.z * inter.z + d > 0){
-		/*vec3 mult = inter * c.rot;
-		float dist = abs(mult.x + mult.y + mult.z + d) / sqrt(c.rot.x * c.rot.x + c.rot.y * c.rot.y + c.rot.z * c.rot.z);
-		vec3 sous = r.pos - (inter + normalize(c.rot) * dist);
-		h.dist = 0;//sous.x * sous.x + sous.y * sous.y + sous.z * sous.z;
-		h.pos = inter + normalize(c.rot) * dist;
-		h.norm = faceforward(c.rot, c.rot, r.dir);
-		h.mat = m;*/
-		plane(c.rot, pos, 24, m, r, h);
+	if (c.rot.x * inter.x + c.rot.y * inter.y + c.rot.z * inter.z + d > 0)
+		plane(c.rot, pos, 24, m, r, tmp);
+	if(c2.rot.x * inter.x + c2.rot.y * inter.y + c2.rot.z * inter.z + d2 > 0)
+		plane(c2.rot, pos2, 24, m, r, tmp);
+
+	if (c.rot.x * inter.x + c.rot.y * inter.y + c.rot.z * inter.z + d > 0 && c2.rot.x * inter.x + c2.rot.y * inter.y + c2.rot.z * inter.z + d2 > 0){
+		h = tmp;
 		return true;
 	}
+
 	return false;
 }
 
@@ -90,7 +87,7 @@ void sphere (vec3 pos, float data, Material mat, Ray r, inout Hit h){
 	vec3 d = r.pos - pos;
 
 	Coupe co;
-	co.rot = vec3(0,1,-1);
+	co.rot = vec3(0,0,-1);
 	co.dist = 1;
 
 	Coupe co2;
@@ -112,13 +109,7 @@ void sphere (vec3 pos, float data, Material mat, Ray r, inout Hit h){
 		return;
 	vec3 inter = r.pos + r.dir * t;
 
-	if (decoupe(pos, inter, co, co2, mat, r, h)){
-		/*if (t2 > 0 && t2 < h.dist) {
-			h.dist = t2 + EPSI;
-			h.pos = r.pos + r.dir * h.dist;
-			h.norm = h.pos - pos;
-			h.mat = mat;
-		}*/
+	if (decoupe(pos, inter, co, co2, data, mat, r, h)){
 		return;
 	}
 

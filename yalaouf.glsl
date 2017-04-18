@@ -56,37 +56,33 @@ void plane (vec3 norm, vec3 pos, float data, Material mat, Ray r, inout Hit h) {
 }
 
 /* Découpe de sphère */
-void decoupe(vec3 centre, vec3 inter, Coupe c, Coupe c2, Material m, Ray r, inout Hit h, inout bool bo)
+bool decoupe(vec3 centre, vec3 inter, Coupe c, Coupe c2)
 {
 	vec3 pos = centre +normalize(c.rot) * c.dist;
 	vec3 pos2 = centre +  normalize(c2.rot) * c2.dist;
 
 	float d = (c.rot.x * pos.x + c.rot.y * pos.y + c.rot.z * pos.z) * -1;
 	float d2 = (c2.rot.x * pos2.x + c2.rot.y * pos2.y + c2.rot.z * pos2.z) * -1;
-	bo = false;
 
-	if (c2.rot.x * inter.x + c2.rot.y * inter.y + c2.rot.z * inter.z + d2 > 0){
-		// /plane(c2.rot, pos2, 0, m, r, h);
-		bo = true;
-	}
-	if (c.rot.x * inter.x + c.rot.y * inter.y + c.rot.z * inter.z + d > 0){
-		plane(pos, c.rot, 0, m, r, h);
-		bo = true;
-	}
-	return;
+	if (c2.rot.x * inter.x + c2.rot.y * inter.y + c2.rot.z * inter.z + d2 > 0)
+	 	return true;
+	if (c.rot.x * inter.x + c.rot.y * inter.y + c.rot.z * inter.z + d > 0)
+		return true;
+	return false;
 }
 
 void sphere (vec3 pos, float data, Material mat, Ray r, inout Hit h) {
 	vec3 d = r.pos - pos;
 
 	Coupe co;
-	co.rot = vec3(0,-1,-1);
+	co.rot = vec3(0,0,-1);
 	co.dist = 4;
 
 	Coupe co2;
-	co2.rot = vec3(0,0,1);
+	co2.rot = vec3(0,0,-1);
 	co2.dist = 1;
 
+	int inv = 1;
 	float a = dot (r.dir, r.dir);
 	float b = dot (r.dir, d);
 	float c = dot (d, d) - data * data;
@@ -100,16 +96,29 @@ void sphere (vec3 pos, float data, Material mat, Ray r, inout Hit h) {
 	if (t < 0)
 		return;
 	vec3 inter = r.pos + r.dir * t;
-	bool bo = false;
-	decoupe(pos, inter, co, co2, mat, r, h, bo);
+	if (decoupe(pos, inter, co, co2)){
+		d = (inter + EPSI * -r.dir) - pos;
 
-	if (bo)
-		return;
+		a = dot (-r.dir, -r.dir);
+		b = dot (-r.dir, d);
+		c = dot (d, d) - data * data;
+
+		g = b*b - a*c;
+
+		if (g < EPSI)
+			return;
+
+		float t1 = (-sqrt (g) - b) / a;
+		if (t1 >= 0)
+			return;
+		t = t - t1;
+		inv = -1;
+	}
 
 	if (t < h.dist) {
 		h.dist = t + EPSI;
 		h.pos = r.pos + r.dir * h.dist;
-		h.norm = (h.pos - pos);
+		h.norm = inv * (h.pos - pos);
 		h.mat = mat;
 	}
 	return;
@@ -124,14 +133,24 @@ void cyl (vec3 v, vec3 dir, float data, Material mat, Ray r, inout Hit h) {
 	float c = dot(d, d) - pow(dot(d, dir), 2) - data * data;
 	float g = b*b - 4*a*c;
 
+	Coupe co;
+	co.rot = vec3(0,0,1);
+	co.dist = 4;
+
+	Coupe co2;
+	co2.rot = vec3(0,0,1);
+	co2.dist = 1;
+
 	if (g < 0)
 		return;
 
 	float t1 = (-sqrt(g) - b) / (2*a);
 	//float t2 = (sqrt(g) - b) / (2*a);
 
-	if (t1 < 0)
+	if (t1 < 0 )
 		return ;
+
+	vec3 inter = r.pos + r.dir * t1;
 
 	if (t1 < h.dist){
 		h.dist = t1 - EPSI;
@@ -142,12 +161,12 @@ void cyl (vec3 v, vec3 dir, float data, Material mat, Ray r, inout Hit h) {
 		h.mat = mat;
 	}
 	/*else if (t2 >= 0 && t2 < h.dist){
-	  h.dist = t2;
-	  h.pos = r.pos + r.dir * t2;
-	  vec3 temp = rot * (dot(r.dir, rot) * h.dist + dot(r.pos - v, rot));
-	  vec3 tmp = h.pos - v;
-	  h.color = color;
-	  h.norm = temp - tmp;
+		h.dist = t2 - EPSI;
+		h.pos = r.pos + r.dir * h.dist;
+		vec3 temp = dir * (dot(r.dir, dir) * h.dist + dot(r.pos - v, dir));
+		vec3 tmp = h.pos - v;
+		h.norm = tmp - temp;
+		h.mat = mat;
 	  }*/
 }
 
@@ -199,6 +218,7 @@ vec3		light(vec3 pos, Ray r, Hit h)
 	//if (shadows(h.pos, d, h))
 	//	return (color);
 	color += (limit(dot(h.norm, d), 0.0, 1.0)) * vec3(h.mat.texture.xyz);
+
   return (color);
 }
 

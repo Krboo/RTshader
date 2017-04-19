@@ -62,6 +62,7 @@ void plane (vec3 norm, vec3 pos, float data, Material mat, Ray r, inout Hit h) {
 bool decoupe(vec3 centre, vec3 inter, Coupe c, Coupe c2,float data, Material m, Ray r,inout Hit h)
 {
 	Hit tmp;
+	Hit	tmp2 = h;
 	tmp = h;
 	vec3 pos = centre +normalize(c.rot) * c.dist;
 	vec3 pos2 = centre +  normalize(c2.rot) * c2.dist;
@@ -69,18 +70,19 @@ bool decoupe(vec3 centre, vec3 inter, Coupe c, Coupe c2,float data, Material m, 
 	float d = (c.rot.x * pos.x + c.rot.y * pos.y + c.rot.z * pos.z) * -1;
 	float d2 = (c2.rot.x * pos2.x + c2.rot.y * pos2.y + c2.rot.z * pos2.z) * -1;
 
+	bool t1 = (c.rot.x * inter.x + c.rot.y * inter.y + c.rot.z * inter.z + d < 0);
+	bool t2 = (c2.rot.x * inter.x + c2.rot.y * inter.y + c2.rot.z * inter.z + d2 < 0);
 
-	if (c.rot.x * inter.x + c.rot.y * inter.y + c.rot.z * inter.z + d > 0)
-		plane(c.rot, pos, 24, m, r, tmp);
-	if(c2.rot.x * inter.x + c2.rot.y * inter.y + c2.rot.z * inter.z + d2 > 0)
-		plane(c2.rot, pos2, 24, m, r, tmp);
+	float v1 = c.rot.x * inter.x + c.rot.y * inter.y + c.rot.z * inter.z + d;
+	float v2 = c2.rot.x * inter.x + c2.rot.y * inter.y + c2.rot.z * inter.z + d2;
 
-	if (c.rot.x * inter.x + c.rot.y * inter.y + c.rot.z * inter.z + d > 0 && c2.rot.x * inter.x + c2.rot.y * inter.y + c2.rot.z * inter.z + d2 > 0){
+plane(c2.rot, pos2, 24, m, r, tmp);
+plane(c.rot, pos, 24, m, r, tmp2);
+	if ( v1 < 0 || (tmp.dist > tmp2.dist))
 		h = tmp;
-		return true;
-	}
-
-	return false;
+	if ((v2 < 0) || (tmp2.dist > tmp.dist && v1 > 0) )
+		h = tmp2;
+	return !(t1 && t2);
 }
 
 void sphere (vec3 pos, float data, Material mat, Ray r, inout Hit h){

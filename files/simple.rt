@@ -1,0 +1,32 @@
+cam:
+	type: camera
+	pos: 0 0 5
+
+s1:
+	type: sphere
+	radius: 1
+	reflection: 1
+	color: 255 0 0
+
+s2:
+	type: sphere
+	radius: 1
+	pos: 1 0 1
+	reflection: 1
+	color: 0 0 255
+
+l1:
+	type: point_light
+	pos: 2 2 2
+
+l2:
+	type: point_light
+	pos: -2 -2 -2
+
+l3:
+	type: point_light
+	pos: 2 -2 2
+
+l4:
+	type: point_light
+	pos: 2 -2 -2

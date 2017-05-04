@@ -1,0 +1,83 @@
+camera:
+	type: camera
+	pos: 0 0 -50
+	ambient: 0.4
+	fov: 1.2
+
+light:
+	type: point_light
+	pos: -130 20 0
+	color: 255 255 255
+
+space1:
+	type: plane
+	rot: 0 90 0
+	pos: 0 -2000 0
+	texture: ../textures/space2.jpg
+
+space2:
+	type: plane
+	rot: 0 90 0
+	pos: 0 2000 0
+	texture: ../textures/space2.jpg
+
+sun:
+	type: sphere
+	radius: 15
+	texture: ../textures/sun.jpg
+
+mercure:
+	type: sphere
+	radius: 3
+	texture: ../textures/mercure.jpg
+	moving: Y 30 8
+
+venus:
+	type: sphere
+	radius: 3.5
+	texture: ../textures/venus.jpg
+	moving: Y 60 7
+
+earth:
+	type: sphere
+	radius: 4
+	texture: ../textures/earth.jpg
+	opacity: 1
+	moving: Y 90 6
+
+mars:
+	type: sphere
+	radius: 3.5
+	texture: ../textures/mars.jpg
+	moving: Y 120 5
+
+jupiter:
+	type: sphere
+	radius: 10
+	texture: ../textures/jupiter.jpg
+	moving: Y 200 4
+
+saturne:
+	type: sphere
+	radius: 8
+	texture: ../textures/saturne.jpg
+	moving: Y 250 3
+
+anneau_saturne:
+	type: disk
+	color: 125 125 200
+	height: 300
+	rot: 0 90 0
+	moving: Y 250 3
+
+uranus:
+	type: sphere
+	radius: 5.5
+	texture: ../textures/uranus.jpg
+	moving: Y 300 2
+
+neptune:
+	type: sphere
+	radius: 6
+	texture: ../textures/neptune.jpg
+	moving: Y 350 1

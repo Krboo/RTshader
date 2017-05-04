@@ -1,0 +1,44 @@
+cube_troue:
+    type: cube_troue
+    pos: -10 -10 -10
+    rot: 45 0 0
+    height: 5
+    color: 0x00FFF0
+
+glass:
+    type: glass
+    pos: -10 10 10
+    rot: 45 0 0
+    radius: 6
+    color: 0xFF0000
+
+disk:
+    type: disk
+    pos: -10 50 50
+    rot: 45 0 0
+    radius: 6
+    color: 0x0000FF
+
+tore:
+    type: tore_de_sphere
+    pos: 30 30 -10
+    rot: 45 0 0
+    radius: 10
+    color: 0x00FF00
+
+cone:
+    type: cone
+    pos: 10 -10 -10
+    rot: 45 0 0
+    angle: 30
+    color: 0xFF0000
+    slice: 0 1 1 -5
+    slice: 0 -1 -1 -5
+
+light1:
+	type: point_light
+	pos: 10 10 10
+
+camera:
+	type: camera
+	pos: 10 10 10

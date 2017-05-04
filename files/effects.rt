@@ -1,0 +1,62 @@
+camera:
+	type: camera
+	pos: 0 5 -20
+	ambient: 1
+
+checkerboard:
+	type: sphere
+	color_effect: CHECKERBOARD
+	radius: 3
+	color: 93 00 255
+	pos: -10 5 10
+
+brick:
+	type: sphere
+	color_effect: BRICK
+	radius: 3
+	color: 93 00 255
+	pos: -10 5 -10
+
+noise:
+	type: sphere
+	color_effect: NOISE
+	radius: 3
+	color: 93 00 255
+	pos: 10 5 10
+
+moving noise:
+	type: sphere
+	color_effect: MOVING_NOISE
+	radius: 3
+	color: 93 00 255
+	pos: 10 5 -10
+
+fbm:
+	type: sphere
+	color_effect: FBM
+	radius: 3
+	color: 93 00 255
+	pos: 15 5 15
+
+
+checkerboard-normal:
+	type: sphere
+	normal_effect: N_MOVING_NOISE
+	radius: 3
+	color: 93 00 255
+	pos: -10 -5 10
+
+noise-normal:
+	type: sphere
+	normal_effect: N_NOISE
+	radius: 3
+	color: 93 00 255
+	pos: -10 -5 -10
+
+noise-fbm:
+	type: sphere
+	normal_effect: N_FBM
+	radius: 3
+	color: 93 00 255
+	pos: -15 -5 -15
+

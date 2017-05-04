@@ -1,0 +1,28 @@
+camera:
+	type: camera
+	pos: 10 0 -10
+	fov: 1.2
+	ambient: 0.4
+
+light:
+	type: point_light
+	intensity: 4
+	pos: 20 20 20
+	color: 0x000000
+
+sphere2:
+	type: glass
+	pos: 0 -10 0
+	rot: 45 45 0
+	radius: 4
+	color: 0x0000FF
+	specular: 0
+	opacity: 1
+	refraction: 1.3
+
+background:
+	type: plane
+	pos: 0 0 -20
+	height: 50
+	rot: 0 0 1
+	color: 0xFFFFFF

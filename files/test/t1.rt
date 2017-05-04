@@ -1,0 +1,53 @@
+plane1:
+    type: plane
+    pos: 10 10 0
+    rot: 0 0 0
+    color: 0xFF00FF
+    reflection: 1
+
+cone1:
+    type: cone
+    pos: 10 -10 -10
+    angle: 5
+    rot: 45 0 0
+    color: 0x00FF00
+
+camera:
+    type: camera
+    pos: 10 0 -100
+    fov: 1.2
+    ambient: 0.2
+
+light:
+    type: point_light
+    intensity: 2
+    pos: 10 10 -9
+
+sphere1:
+    type: sphere
+    pos: 10 0 0
+    radius: 4
+    texture: ../textures/lava-rock-4k.jpg
+
+sphere2:
+    type: sphere
+    pos: 10 10 0
+    radius: 4
+	texture: ../textures/lava-rock-4k.jpg
+    opacity: 0.5
+    refraction: 1.9
+
+sphere3:
+    type: sphere
+    pos: 10 0 -10
+    radius: 4
+	color: 100 100 200
+    bumpmap: ../textures/normal.jpg
+
+
+cube1:
+    type: cube
+    pos: 10 20 -10
+    rot: 45 45 0
+    height: 4
+    texture: ../textures/wood.jpg

@@ -1,0 +1,31 @@
+s:
+	type: sphere
+	radius: 1
+	color: 255 0 0
+	opacity: 0.5
+	refraction: 1.4
+
+p:
+	type: plane
+	color: 50 50 50
+	pos: 0 -2 0
+	height: 5
+	rot: 0 90 0
+
+l1:
+	type: point_light
+	pos: 0 2 -2
+	color: 255 0 0
+	intensity: 10
+
+l2:
+	type: point_light
+	pos: 0 2 -5
+	color: 0 255 0
+	intensity: 10
+
+l3:
+	type: point_light
+	pos: 0 2 -10
+	color: 0 0 255
+	intensity: 10

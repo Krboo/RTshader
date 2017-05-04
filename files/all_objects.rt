@@ -1,0 +1,87 @@
+camera:
+	type: camera
+	pos: 0 0 -40
+	ambient: 0.4
+	fov: 1.2
+
+light:
+	type: point_light
+	pos: 0 30 0
+	intensity: 2
+	color: 255 255 255
+
+sphere1:
+	type: sphere
+	pos: 0 0 20
+	radius: 5
+	color: 24 142 235
+	specular: 0.9
+
+sphere2:
+	type: sphere
+	pos: 0 20 20
+	radius: 5
+	texture: ../textures/earth.jpg
+	specular: 0.9
+	MOVE: XYZ 5 1
+
+sphere3:
+	type: sphere
+	pos: 20 0 20
+	radius: 5
+	color: 255 255 255
+	reflection: 0.5
+
+sphere4:
+	type: sphere
+	pos: 20 20 20
+	radius: 5
+	opacity: 0.5
+	refraction: 1.4
+
+cylindre1:
+	type: cylindre
+	pos: -20 0 20
+	radius: 5
+	color: 25 98 253
+	rot: 90 0 0
+	reflection: 0.5
+
+cylindre2:
+	type: cylindre
+	pos: -40 -10 20
+	radius: 5
+	texture: ../textures/ice.jpg
+	rot: 0 0 0
+	opacity: 0.5
+	refraction: 1.2
+
+cone1:
+	type: cone
+	pos: 40 0 20
+	angle: 10
+	rot: 90 0 0
+	color: 241 49 128
+	reflection: 0.4
+
+cone2:
+	type: cone
+	pos: 60 -10 20
+	angle: 10
+	rot: 0 0 0
+	opacity: 0.5
+	refraction: 1.2
+	color: 134 24 241
+
+plan1:
+	type: plane
+	pos: 0 50 0
+	rot: 0 90 0
+	color: 142 98 234
+
+plan2:
+	type: plane
+	pos: 0 -30 0
+	rot: 0 90 0
+	color: 14 231 124
+	reflection: 0.5

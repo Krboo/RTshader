@@ -2,5 +2,5 @@
 
 Dependencies: clang, cmake, automake, libtool
 
-other version :https://github.com/alelievr/RT)
+other version : github.com/alelievr/RT)
 pmartine/alelievr/yalaouf/avially
